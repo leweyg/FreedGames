@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		5CF5A6A5255775E600B5E349 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CF5A6A4255775E600B5E349 /* main.cpp */; };
+		5CF5A6AE255776C800B5E349 /* ShuzzleCore_GLUT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CF5A6AD255776C800B5E349 /* ShuzzleCore_GLUT.cpp */; };
+		5CF5A6B12557795600B5E349 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CF5A6B02557795600B5E349 /* GLUT.framework */; };
+		5CF5A6B3255779CE00B5E349 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CF5A6B2255779CE00B5E349 /* OpenGL.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +28,9 @@
 /* Begin PBXFileReference section */
 		5CF5A6A1255775E600B5E349 /* Shuzzle */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Shuzzle; sourceTree = BUILT_PRODUCTS_DIR; };
 		5CF5A6A4255775E600B5E349 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		5CF5A6AD255776C800B5E349 /* ShuzzleCore_GLUT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ShuzzleCore_GLUT.cpp; sourceTree = "<group>"; };
+		5CF5A6B02557795600B5E349 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
+		5CF5A6B2255779CE00B5E349 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +38,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5CF5A6B3255779CE00B5E349 /* OpenGL.framework in Frameworks */,
+				5CF5A6B12557795600B5E349 /* GLUT.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -43,6 +51,7 @@
 			children = (
 				5CF5A6A3255775E600B5E349 /* Shuzzle */,
 				5CF5A6A2255775E600B5E349 /* Products */,
+				5CF5A6AF2557795600B5E349 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -57,9 +66,19 @@
 		5CF5A6A3255775E600B5E349 /* Shuzzle */ = {
 			isa = PBXGroup;
 			children = (
+				5CF5A6AD255776C800B5E349 /* ShuzzleCore_GLUT.cpp */,
 				5CF5A6A4255775E600B5E349 /* main.cpp */,
 			);
 			path = Shuzzle;
+			sourceTree = "<group>";
+		};
+		5CF5A6AF2557795600B5E349 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5CF5A6B2255779CE00B5E349 /* OpenGL.framework */,
+				5CF5A6B02557795600B5E349 /* GLUT.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -119,6 +138,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5CF5A6A5255775E600B5E349 /* main.cpp in Sources */,
+				5CF5A6AE255776C800B5E349 /* ShuzzleCore_GLUT.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
