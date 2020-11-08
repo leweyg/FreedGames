@@ -11,6 +11,7 @@
 		5CF5A6AE255776C800B5E349 /* ShuzzleCore_GLUT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CF5A6AD255776C800B5E349 /* ShuzzleCore_GLUT.cpp */; };
 		5CF5A6B12557795600B5E349 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CF5A6B02557795600B5E349 /* GLUT.framework */; };
 		5CF5A6B3255779CE00B5E349 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CF5A6B2255779CE00B5E349 /* OpenGL.framework */; };
+		5CF5A6B525577C0D00B5E349 /* GoCore_GLUT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CF5A6B425577C0D00B5E349 /* GoCore_GLUT.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -31,6 +32,7 @@
 		5CF5A6AD255776C800B5E349 /* ShuzzleCore_GLUT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ShuzzleCore_GLUT.cpp; sourceTree = "<group>"; };
 		5CF5A6B02557795600B5E349 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
 		5CF5A6B2255779CE00B5E349 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		5CF5A6B425577C0D00B5E349 /* GoCore_GLUT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GoCore_GLUT.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,6 +68,7 @@
 		5CF5A6A3255775E600B5E349 /* Shuzzle */ = {
 			isa = PBXGroup;
 			children = (
+				5CF5A6B425577C0D00B5E349 /* GoCore_GLUT.cpp */,
 				5CF5A6AD255776C800B5E349 /* ShuzzleCore_GLUT.cpp */,
 				5CF5A6A4255775E600B5E349 /* main.cpp */,
 			);
@@ -138,6 +141,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5CF5A6A5255775E600B5E349 /* main.cpp in Sources */,
+				5CF5A6B525577C0D00B5E349 /* GoCore_GLUT.cpp in Sources */,
 				5CF5A6AE255776C800B5E349 /* ShuzzleCore_GLUT.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

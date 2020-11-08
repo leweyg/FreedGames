@@ -1,8 +1,10 @@
 
-//.  Freed Invasion - based on Lewcid
+//.  Shuzzle - based on Lewcid
 //		By Lewey Geselowitz
 //
 // 6/15/2004
+
+#ifdef COMPILE_SHUZZLE
 
 #include "OSBinding.cpp"
 
@@ -530,4 +532,6 @@ int main(int argc,char **argv)
 
   return 0; 
 } 
+
+#endif
 

@@ -8,6 +8,8 @@
 // Rewrite 2 - 6/12/2004
 //
 
+#if !COMPILE_SHUZZLE
+
 //#define UseAsserts 1
 
 //#if UseAsserts
@@ -2820,3 +2822,6 @@ void MeshRenderContext::Flush()
 
 	FIRE( this->mEvent_PostFlush, this);
 }
+
+#endif
+

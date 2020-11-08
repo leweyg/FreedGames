@@ -417,7 +417,9 @@ int main(int argc,char **argv)
   glutMotionFunc(MouseMotion);
   glutKeyboardFunc(KeyFunc);
   glutTimerFunc(200, Test_Tick, 0);
-
+    glutWMCloseFunc([]() {
+        exit(0);
+    });
   havewindow = true;
 
   //Comment this to remove frame meter:

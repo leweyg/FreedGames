@@ -6,8 +6,65 @@
 //
 
 #include <stdio.h>
+
+#define NET_ON_WIN32 0
+#define NET_ON_UNIX  1
+
+#define net_buffersize    400
+char net_textbuffer[net_buffersize];
+
+
+class Net_Transport;
+
+typedef void (*Net_Callback)(Net_Transport* trans, void* extra);
+
+
+#if NET_ON_UNIX
+
+bool Net_InitNetworking() { return true; }
+
+class Net_Transport
+{
+public:
+    bool mOpen, mIsHost, mHadError;
+    char mErrorBuffer[net_buffersize];
+    
+    void Send(char* data, int bytes) {}
+    bool DataToRecieve() { return false; }
+    int Recieve(char* data, int max, bool* waserror=0) { return 0; }
+    void Close() {}
+    
+    void SendString(char* txt) {}
+    bool RecieveString(char* to, int max) {return false;}
+    
+    //Host methods
+    bool Host_Setup() {return false;}
+    bool Host_WaitForClient_Blocking() {return false;}
+    void Host_WaitForClient_Begin(Net_Callback whendone, void* extra) {}
+    void Host_WaitForClient_Cancel() {}
+    
+    //Client Methods
+    bool Client_Setup(char* ip) {return false;}
+    
+    ~Net_Transport() {Close();};
+    Net_Transport() {mOpen=false; mErrorBuffer[0]=0;
+        mHadError=false; mIsHost=false;};
+    
+    //THESE ARE PRIVATE: Don't use them!
+    void _HadError(char* mess) {printf("%s",mess);strcpy(mErrorBuffer,mess);mHadError=true;};
+    
+    unsigned long _NB_ID;
+    void* _NB_Extra;
+    bool _NB_ShouldCancel;
+    Net_Callback _NB_WhenDone;
+};
+
+
+#else
+
 #include <windows.h>
 #include <winsock.h>
+
 
 #define NET_FAILED			false
 #define NET_DEFAULTSOCKET		2345
@@ -16,26 +73,32 @@
 #define NET_IP_RECURSIVE	"127.0.0.1"
 
 
-#define net_buffersize	400
-char net_textbuffer[net_buffersize];
 
 bool Net_InitNetworking()
 {
+#if NET_ON_WIN32
 	WORD ver = MAKEWORD(1,2);
 	WSADATA wsaData;
 	return (WSAStartup(ver, &wsaData)==0);
+#else
+    return true;
+#endif
 }
 
 bool Net_GetMyLANIP(char* ipname)
 {
+#if NET_ON_WIN32
 	hostent* localHost = gethostbyname("");
 	char* f = inet_ntoa (*(in_addr *)localHost->h_addr_list[0]);
 	strcpy(ipname, f);
-	return true;
+#else
+    return false;
+#endif
 }
 
 bool Net_GetMyIP(char* ipname)
 {
+#if NET_ON_WIN32
 //	ipname[0]=0;
 //	return true;
 
@@ -50,6 +113,9 @@ bool Net_GetMyIP(char* ipname)
 	char* f = inet_ntoa (*(in_addr *)localHost->h_addr_list[0]);
 	strcpy(ipname, f);
 	return true;
+#else
+    return false;
+#endif
 
 	/*
 	if (gethostname(net_textbuffer, net_buffersize) == SOCKET_ERROR)
@@ -65,6 +131,7 @@ bool Net_GetMyIP(char* ipname)
 	*/
 }
 
+#if NET_ON_WIN32
 bool Net_SetBlockingMode(SOCKET s, bool isblocking)
 {
 	unsigned long notblocking = !isblocking;
@@ -78,15 +145,15 @@ void neterror2(char* text)
 //	ShowMessage(text, "Net Error");
 	MessageBox(0, text, "Net Error:", MB_OK);
 }
+#endif
 
-class Net_Transport;
-
-typedef void (*Net_Callback)(Net_Transport* trans, void* extra);
 
 class Net_Transport
 {
 public:
+#if NET_ON_WIN32
 	SOCKET mSocket, mHostSocket;
+#endif
 	bool mOpen, mIsHost, mHadError;
 	char mErrorBuffer[net_buffersize];
 
@@ -146,8 +213,9 @@ void Net_Transport::SendString(char* text)
 	Send( text, len );
 }
 
-unsigned long _stdcall net_NoBlockingConnect(LPVOID param)
+unsigned long _stdcall_net_NoBlockingConnect(void* param)
 {
+#if NET_ON_WIN32
 	Net_Transport* trans = (Net_Transport*)param;
 
 	Net_SetBlockingMode(trans->mHostSocket, false);
@@ -171,6 +239,9 @@ unsigned long _stdcall net_NoBlockingConnect(LPVOID param)
 	trans->Close();
 
 	return 1;
+#else
+    return false;
+#endif
 }
 
 void Net_Transport::Host_WaitForClient_Cancel()
@@ -344,3 +415,6 @@ void Net_Transport::Close()
 	mSocket = INVALID_SOCKET;
 	mHostSocket = INVALID_SOCKET;
 }
+
+#endif // NET_ON_WIN32
+

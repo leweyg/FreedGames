@@ -5,8 +5,9 @@
 #define SpecialRatio 1.0
 #endif
 
-#include <stdio.h>
-#include <iostream.h>
+#include <iostream>
+#include <fstream>
+//#include <iostream.h>
 
 char EndGameMessage[200] = {0};
 
@@ -916,7 +917,7 @@ void CreateBoard_Diamond(Board* board, int hintw, int hinth)
 
 bool IsFile(char* filename)
 {
-	ifstream fin(filename, ios::in | ios::nocreate );
+    std::ifstream fin(filename, std::ios::in );// | std::ios::nocreate );
 	bool found = (fin.is_open()!=0);
 	fin.close();
 	return found;
@@ -924,7 +925,7 @@ bool IsFile(char* filename)
 
 bool CreateBoard_FromFile(Board* board, char* filename)
 {
-	ifstream fin(filename, ios::in | ios::nocreate );
+    std::ifstream fin(filename, std::ios::in ); //| std::ios::nocreate );
 	if (!fin.is_open())
 	{
 		return false;

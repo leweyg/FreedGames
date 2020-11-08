@@ -9,6 +9,7 @@
 
 bool AskHostOrClient(bool* dohost)
 {
+    #if NET_ON_WIN32
 	int res = MessageBox(0, 
 		"Do you wish to host a game?\n\nYes for Host\nNo for Connect to Host", 
 		"Connect Option", MB_YESNOCANCEL);
@@ -23,6 +24,9 @@ bool AskHostOrClient(bool* dohost)
 		*dohost = false;
 		return true;
 	}
+#else
+    return false;
+#endif
 
 	return false;
 }
@@ -30,6 +34,7 @@ bool AskHostOrClient(bool* dohost)
 char LN_Buffer[400];
 bool LN_IsHosting;
 Net_Transport* LN_Trans;
+#if NET_ON_WIN32
 HWND LN_Dlg;
 
 void ln_HostConnected(Net_Transport* trans, void* extra)
@@ -101,6 +106,7 @@ LRESULT CALLBACK LN_DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 	}
     return FALSE;
 }
+#endif // NET_ON_WIN32
 
 bool SetupRemoting(Net_Transport* transport)
 {
@@ -112,10 +118,13 @@ bool SetupRemoting(Net_Transport* transport)
 	if (!AskHostOrClient(&LN_IsHosting))
 		return false;
 
+    
+#if NET_ON_WIN32
 	LN_Trans = transport;
 	int res = DialogBox(0, (LPCTSTR)IDD_Host_Hosting, 0, (DLGPROC)LN_DlgProc);
 	if (res==IDOK)
 		return true;
+#endif
 
 	return false;
 }

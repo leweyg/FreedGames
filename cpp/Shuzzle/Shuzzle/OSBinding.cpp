@@ -35,7 +35,7 @@ double LC_GetCurrentTime()
 
 #define UseMessageBoxForIntro	false
 
-#else
+#else // WIN32
 
 #define UseMessageBoxForIntro	false
 
@@ -48,6 +48,20 @@ double LC_GetCurrentTime()
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
+
+#define IDNO       (1<<0)
+#define IDOK       (1<<1)
+#define IDYES      (1<<2)
+#define MB_NO       IDNO
+#define MB_OK       IDOK
+#define MB_YES      IDYES
+
+#define MB_YESNO    (MB_YES | MB_NO )
+
+int MessageBox(int type, char* message, char* title, int typeMask) {
+    printf("TODO: message box %d: %s: %s\n", typeMask, title, message );
+    return 0;
+}
 
 void SetRandomSeed()
 {
