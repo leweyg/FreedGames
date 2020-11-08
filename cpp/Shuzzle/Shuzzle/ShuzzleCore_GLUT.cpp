@@ -4,7 +4,8 @@
 //
 // 6/15/2004
 
-#ifdef COMPILE_SHUZZLE
+#define COMPILE_SHUZZLE 1
+#if COMPILE_SHUZZLE
 
 #include "OSBinding.cpp"
 

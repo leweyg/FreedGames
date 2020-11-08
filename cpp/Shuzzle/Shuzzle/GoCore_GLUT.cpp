@@ -4,6 +4,9 @@
 //
 // 6/15/2004
 
+#define COMPILE_FREED_GO 0
+#if COMPILE_FREED_GO
+
 #include "OSBinding.cpp"
 
 //
@@ -431,4 +434,6 @@ int main(int argc,char **argv)
 
   return 0; 
 } 
+
+#endif
 

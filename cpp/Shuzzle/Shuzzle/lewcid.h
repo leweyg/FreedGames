@@ -8,7 +8,7 @@
 // Rewrite 2 - 6/12/2004
 //
 
-#if !COMPILE_SHUZZLE
+#if 1 //!COMPILE_SHUZZLE
 
 //#define UseAsserts 1
 
