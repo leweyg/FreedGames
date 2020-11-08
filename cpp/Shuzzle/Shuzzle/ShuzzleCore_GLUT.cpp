@@ -517,6 +517,9 @@ int main(int argc,char **argv)
   glutMouseFunc(Mouse); 
   glutMotionFunc(MouseMotion);
   glutKeyboardFunc(KeyFunc);
+    glutWMCloseFunc([]() {
+        exit(0);
+    });
   
   glutSetWindowTitle("Shuzzle - by Lewey Geselowitz");
   
