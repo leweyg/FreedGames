@@ -228,7 +228,7 @@
             function onInnerMouseEvent( event, isDown, isMove ) {
             
                 mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-                mouse.y = - ( ( event.clientY - container.offsetTop ) / window.innerHeight ) * 2 + 1;
+                mouse.y = - ( ( event.clientY + window.pageYOffset - container.offsetTop ) / window.innerHeight ) * 2 + 1;
 
                 if (isMove) {
                     var lerpFactor = 0.03;
