@@ -43,9 +43,12 @@
             let game = FreedGoGame_Create();
 
 			let INTERSECTED;
-			let theta = 0;
+            let theta = 0;
+            let camera_rotate_around = 0;
+            let camera_rotate_up = 0;
 
-			const mouse = new THREE.Vector2();
+            const mouse = new THREE.Vector2();
+            const mousePrevious = new THREE.Vector2();
 			const radius = 100;
 
 			init();
@@ -141,7 +144,12 @@
 				event.preventDefault();
 
 				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+                mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+                camera_rotate_around = mouse.x * 120.0;
+                camera_rotate_up = mouse.y * 60.0;
+
+                mousePrevious.copy( mouse );
 
                 requestRedraw();
 			}
@@ -166,11 +174,11 @@
 
 			function render() {
 
-				theta += 0.2;
+				//theta += 0.2;
 
-				camera.position.x = radius * Math.sin( THREE.MathUtils.degToRad( theta ) );
-				camera.position.y = radius * Math.sin( THREE.MathUtils.degToRad( theta ) );
-				camera.position.z = radius * Math.cos( THREE.MathUtils.degToRad( theta ) );
+				camera.position.x = radius * Math.sin( THREE.MathUtils.degToRad( camera_rotate_around ) );
+				camera.position.y = radius * Math.sin( THREE.MathUtils.degToRad( camera_rotate_up ) );
+				camera.position.z = radius * Math.cos( THREE.MathUtils.degToRad( camera_rotate_around ) );
 				camera.lookAt( scene.position );
 
                 camera.updateMatrixWorld();
