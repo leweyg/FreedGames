@@ -7,7 +7,7 @@
 		<link type="text/css" rel="stylesheet" href="main.css">
 		<style>
 			body {
-				background-color: #09b45f;
+				background-color: #6caf56;
 				color: rgb(236, 236, 236);
 			}
 			a {
@@ -24,6 +24,12 @@
                 </select>
         </div>
         <script src="three.js"></script>
+        <script src="mobius.go_3d.json.js"></script>
+        <script src="freed_go.js"></script>
+
+        <div id="main_gl_div">
+
+        </div>
 
 		<script type="module">
 
@@ -32,7 +38,9 @@
 			//import Stats from './jsm/libs/stats.module.js';
 
 			let container;//, stats;
-			let camera, scene, raycaster, renderer, light;
+            let camera, scene, raycaster, renderer, light;
+            
+            let game = FreedGoGame_Create();
 
 			let INTERSECTED;
 			let theta = 0;
@@ -45,13 +53,14 @@
 
 			function init() {
 
-				container = document.createElement( 'div' );
-				document.body.appendChild( container );
+				//container = document.createElement( 'div' );
+                //document.body.appendChild( container );
+                container = main_gl_div;
 
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
 
 				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0xf0f0f0 );
+				scene.background = new THREE.Color( 0x6caf56 );
 
 				light = new THREE.DirectionalLight( 0xffffff, 1 );
                 light.position.set( 1, 1, 1 ).normalize();
@@ -61,8 +70,11 @@
                 const board_scale = 35.0;
                 const piece_scale = 0.1;
 
-				const geometry = new THREE.BoxBufferGeometry( 20, 20, 20 );
+                const geometry = new THREE.BoxBufferGeometry( 20, 20, 20 );
+                
+                game.Render.Build ( scene );
 
+                /*
 				for ( let i = 0; i < 2000; i ++ ) {
 
 					const object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) );
@@ -81,15 +93,16 @@
                     object.scale.z = Math.random() + 0.5;
                     object.scale.multiplyScalar( piece_scale );
 
-					scene.add( object );
+					//scene.add( object );
 
-				}
+                }
+                */
 
 				raycaster = new THREE.Raycaster();
 
 				renderer = new THREE.WebGLRenderer();
 				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
+                renderer.setSize( window.innerWidth, window.innerHeight );
 				container.appendChild( renderer.domElement );
 
 				//stats = new Stats();
@@ -189,7 +202,11 @@
 
 			}
 
-		</script>
+        </script>
+        
+        <div>
+            By <a href="http://www.lewcid.com/lg/aboutme.html">Lewey Geselowitz</a>, based on <a href="http://www.lewcid.com/lg/lc/freedgo.html">Freed Go (v1)</a>.
+        </div>
 
 	</body>
 </html>
