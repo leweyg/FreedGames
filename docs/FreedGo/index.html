@@ -264,7 +264,7 @@
                 }
             }
 
-            game.OnUpdated.push(() => {
+            game.OnCoreUpdated.push(() => {
                 var turn = game.State.Core.Turn;
                 var white = "<span style='color:white'>" + game.State.Core.Taken[0];
                 var black = "<span style='color:black'>" + game.State.Core.Taken[1];

@@ -7,21 +7,33 @@ var FreedGoGame_Create = function() {
 
 var FreedGoPrototype_State = {
     Game : null,
+    Fast : {
+        Hovers : [],
+    },
     Core : {
         Turn : 0,
         Nodes : [],
         Taken : [],
-        Hovers : [],
     },
-    OnCoreUpdated : (() => {}),
+    OnCoreUpdated : [],
+    OnFastUpdated : [],
 
     Setup : function(game) {
         this.Game = game;
         this.NewBoard();
     },
 
+    DoFastChangedLocally : function() {
+        for (var i in this.OnFastUpdated) {
+            this.OnFastUpdated[i]();
+        }
+    },
+
     DoCoreChangedLocally : function() {
-        this.OnCoreUpdated();
+        for (var i in this.OnCoreUpdated) {
+            this.OnCoreUpdated[i]();
+        }
+        this.DoFastChangedLocally();
     },
 
     NewBoard : function() {
@@ -31,7 +43,7 @@ var FreedGoPrototype_State = {
         this.Core.Nodes = []; 
         this.Core.Nodes.length = numNodes;
         this.Core.Taken = [ 0, 0 ];
-        this.Core.Hovers = [ -1, -1 ];
+        this.Fast.Hovers = [ -1, -1 ];
         for (var i=0; i<numNodes; i++) {
             this.Core.Nodes[i] = -1;
         }
@@ -77,7 +89,7 @@ var FreedGoThreeJS_Prototype = {
 
         for (var ti=0; ti<2; ti++) {
             var cursor = this.Cursors[ti];
-            var hover = this.Game.State.Core.Hovers[ti];
+            var hover = this.Game.State.Fast.Hovers[ti];
             if (hover >= 0) {
                 var over = this.Stones[ hover ];
                 cursor.position.copy( over.position );
@@ -186,7 +198,8 @@ var FreedGoPrototype_Game = {
     Board : FreedGo_Boards_Mobius,
     State : FreedGoPrototype_State,
     Render : FreedGoThreeJS_Prototype,
-    OnUpdated : [],
+    OnCoreUpdated : [],
+    OnFastUpdated : [],
 
     ChangeBoard : function( board ) {
         this.Board = board || FreedGo_Boards_Mobius;
@@ -201,11 +214,18 @@ var FreedGoPrototype_Game = {
             this.Render.Build( this.Render.SceneParent );
         }
 
-        this.State.OnCoreUpdated = (() => {
+        this.State.OnCoreUpdated.push(() => {
+            if (state != this.State) return;
+            for (var i in this.OnCoreUpdated) {
+                this.OnCoreUpdated[i]();
+            }
+        });
+
+        this.State.OnFastUpdated.push(() => {
             if (state != this.State) return;
             this.Render.Update();
-            for (var i in this.OnUpdated) {
-                this.OnUpdated[i]();
+            for (var i in this.OnFastUpdated) {
+                this.OnFastUpdated[i]();
             }
         });
 
@@ -218,8 +238,8 @@ var FreedGoPrototype_Game = {
     },
 
     OnHoveredOver : function(index) {
-        this.State.Core.Hovers[ this.State.Core.Turn ] = index;
-        this.State.DoCoreChangedLocally();
+        this.State.Fast.Hovers[ this.State.Core.Turn ] = index;
+        this.State.DoFastChangedLocally();
     },
 
     OnClickedIndex : function(index) {
