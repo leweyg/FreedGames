@@ -186,10 +186,12 @@ var FreedGoPrototype_Game = {
     Board : FreedGo_Boards_Mobius,
     State : FreedGoPrototype_State,
     Render : FreedGoThreeJS_Prototype,
+    OnUpdated : [],
 
     ChangeBoard : function( board ) {
         this.Board = board || FreedGo_Boards_Mobius;
-        this.State = Object.create( FreedGoPrototype_State );
+        var state = Object.create( FreedGoPrototype_State );
+        this.State = state;
         this.State.Setup( this );
         if (!this.Render) {
             this.Render = Object.create( FreedGoThreeJS_Prototype );
@@ -200,7 +202,11 @@ var FreedGoPrototype_Game = {
         }
 
         this.State.OnCoreUpdated = (() => {
+            if (state != this.State) return;
             this.Render.Update();
+            for (var i in this.OnUpdated) {
+                this.OnUpdated[i]();
+            }
         });
 
         this.State.DoCoreChangedLocally();

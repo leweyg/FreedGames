@@ -24,7 +24,9 @@
         <script src="freed_go.js"></script>
 
         <div id="not_info">
-            Freed Go - <a href="http://lewcid.com/" target="_blank" rel="noopener">lewcid.com</a> 
+            Freed Go 
+            - <span id="board_title"></span>
+            - <a href="http://lewcid.com/" target="_blank" rel="noopener">lewcid.com</a> 
             - <select id="new_board_selector">
                 </select>
         </div>
@@ -261,6 +263,22 @@
                     //INTERSECTED.material.emissive.setHex( 0xff0000 );
                 }
             }
+
+            game.OnUpdated.push(() => {
+                var turn = game.State.Core.Turn;
+                var white = "<span style='color:white'>" + game.State.Core.Taken[0];
+                var black = "<span style='color:black'>" + game.State.Core.Taken[1];
+                var title = "";
+                if (turn == 0) {
+                    title = white + "/</span>" + black + "</span>"; 
+                } else {
+                    title = black + "/</span>" + white + "</span>"; 
+                }
+
+
+                board_title.innerHTML = title;
+            });
+            
 
             function findBestUnderMouse() {
                 
