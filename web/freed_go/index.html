@@ -116,7 +116,12 @@
 				//container.appendChild( stats.dom );
 
                 document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-                document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+                document.addEventListener( 'mouseup', onDocumentClicked, false );
+
+                container.ontouchstart = ((evnt) => onTouchEventTop(evnt,true,false));
+                container.ontouchmove = ((evnt) => onTouchEventTop(evnt,true,true));
+                container.ontouchend = ((evnt) => onTouchEventTop(evnt,false,false));
+
 
 				//
 
@@ -146,26 +151,69 @@
 
             }
             
-            function onDocumentMouseUp( event ) {
+            function onDocumentClicked( event ) {
                 if (INTERSECTED && INTERSECTED.userData && INTERSECTED.userData.Node) {
                     var index = INTERSECTED.userData.Node.Index;
                     game.OnClickedIndex( index );
                 }
             }
 
-			function onDocumentMouseMove( event ) {
+            var latestTouchStart = new THREE.Vector2();
+            var latestTouchSwiping = false;
+            function onTouchEventTop(evnt,isDown,isMove) {
+                evnt.preventDefault();
 
-                event.preventDefault();
+                var topTouch = (evnt.touches.length > 0) ? evnt.touches[0] : null;
+                if (topTouch) {
+                    var delta = Math.abs( latestTouchStart.x - topTouch.clientX);
+                    delta += Math.abs( latestTouchStart.y - topTouch.clientY);
+                    var isSwiping = (delta > 15);
+                    //var isClick = false;
+                    //console.log( "Touch " + isDown + " " + isMove + " " + isSwiping + " " + delta);
 
-				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+                    if (isDown && !isMove) {
+                        latestTouchStart.x = topTouch.clientX;
+                        latestTouchStart.y = topTouch.clientY;
+                        latestTouchSwiping = false;
+                    } else if (isMove) {
+                        latestTouchSwiping = isSwiping;
+                        if (!isSwiping) {
+                            isMove = false;
+                        }
+                    } else if (!isDown && !isMove && !isSwiping) {
+                        //isClick = true;
+                    }
+                } else {
+                    //console.log( "TouchEnd " + latestTouchSwiping);
+                    if (!latestTouchSwiping) {
+
+                        onDocumentClicked(evnt);
+                    }
+                }
+
+                for (var ti=0; ti<evnt.touches.length; ti++) {
+                    onInnerMouseEvent(evnt.touches[ti], isDown, isMove );
+                }
+            }
+
+            function onInnerMouseEvent( event, isDown, isMove ) {
+            
+                mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
                 mouse.y = - ( ( event.clientY - container.offsetTop ) / window.innerHeight ) * 2 + 1;
 
-                camera_rotate_around = mouse.x * 60.0;
-                camera_rotate_up = mouse.y * 60.0;
+                if (isMove) {
+                    camera_rotate_around = mouse.x * 60.0;
+                    camera_rotate_up = mouse.y * 60.0;
+                }
 
                 mousePrevious.copy( mouse );
 
                 requestRedraw();
+            }
+
+			function onDocumentMouseMove( event ) {
+                event.preventDefault();
+                onInnerMouseEvent( event, false, true );
 			}
 
 			//

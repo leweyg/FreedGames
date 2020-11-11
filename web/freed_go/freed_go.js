@@ -92,11 +92,17 @@ var FreedGoThreeJS_Prototype = {
 
     Build : function( contextObj ) {
 
-        this.SceneRoot = contextObj;
-        var scene = new THREE.Group();
-        this.SceneRoot.add( scene );
+        if (this.SceneParent && this.SceneRoot) {
+            this.SceneParent.remove( this.SceneRoot );
+            this.SceneRoot = null;
+        }
 
-        this.SceneParent = scene;
+        this.SceneParent = contextObj;
+        var scene = new THREE.Group();
+        this.SceneRoot = scene;
+
+        this.SceneParent.add( scene );
+        
         this.Stones = [];
 
         this.MatsByType = {};
@@ -132,7 +138,7 @@ var FreedGoThreeJS_Prototype = {
 
             //stone.position.copy( node.Position );
 
-            this.SceneParent.add( stone );
+            this.SceneRoot.add( stone );
         }
 
         if (true) {
@@ -151,7 +157,7 @@ var FreedGoThreeJS_Prototype = {
             });
             const lineGeo = new THREE.BufferGeometry().setFromPoints( linePoints );
             const lineObj = new THREE.LineSegments( lineGeo, lineMat );
-            this.SceneParent.add( lineObj );
+            this.SceneRoot.add( lineObj );
         }
 
         if (true) {
@@ -159,7 +165,7 @@ var FreedGoThreeJS_Prototype = {
             for (var ti=0; ti<2; ti++) {
                 const cursorObj = new THREE.Mesh( geometry, this.MatsByType[ti] );
                 cursorObj.scale.set( 0.5, 0.5, 0.5 );
-                this.SceneParent.add( cursorObj );
+                this.SceneRoot.add( cursorObj );
                 this.Cursors[ti] = cursorObj;
             }
         }
