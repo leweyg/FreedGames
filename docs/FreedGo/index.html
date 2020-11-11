@@ -18,15 +18,38 @@
 	</head>
 	<body>
 
-		<div id="not_info">
-            Freed Go - <a href="https://threejs.org" target="_blank" rel="noopener">lewcid.com</a> 
-            - <select>
-                <option>mobius</option>
-                </select>
-        </div>
+
         <script src="three.js"></script>
         <script src="boards_all.js"></script>
         <script src="freed_go.js"></script>
+
+        <div id="not_info">
+            Freed Go - <a href="https://threejs.org" target="_blank" rel="noopener">lewcid.com</a> 
+            - <select id="new_board_selector">
+                </select>
+        </div>
+        <script>
+            var game = null;
+
+            function setupBoardSelection() {
+                var boards = FreedGoBoards;
+                for (var i in boards){
+                    var name = boards[i].Name;
+                    var opt = document.createElement('option');
+                    opt.value = name;
+                    opt.innerHTML = name;
+                    new_board_selector.appendChild(opt);
+                    
+                }
+                new_board_selector.value = "mobius";
+                new_board_selector.onchange = (() => {
+                    var newVal = new_board_selector.value;
+                    var board = FreedGoBoards[newVal];
+                    game.ChangeBoard( board );
+                });
+            }
+            setupBoardSelection();
+        </script>
 
         <div id="main_gl_div">
 
@@ -41,7 +64,7 @@
 			let container;//, stats;
             let camera, scene, raycaster, renderer, light;
             
-            let game = FreedGoGame_Create();
+            game = FreedGoGame_Create();
 
 			let INTERSECTED;
             let theta = 0;

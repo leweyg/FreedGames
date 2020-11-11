@@ -55,6 +55,8 @@ var FreedGoThreeJS_Prototype = {
 
     Update : function() {
 
+        if (!this.SceneRoot) return;
+
         for (var ni=0; ni<this.Stones.length; ni++) {
             var state = this.Game.State.Core.Nodes[ni];
             var from = this.Stones[ni];
@@ -181,16 +183,28 @@ var FreedGoPrototype_Game = {
     State : FreedGoPrototype_State,
     Render : FreedGoThreeJS_Prototype,
 
-    Setup : function() {
-        this.Board = FreedGo_Boards_Mobius;
+    ChangeBoard : function( board ) {
+        this.Board = board || FreedGo_Boards_Mobius;
         this.State = Object.create( FreedGoPrototype_State );
         this.State.Setup( this );
-        this.Render = Object.create( FreedGoThreeJS_Prototype );
+        if (!this.Render) {
+            this.Render = Object.create( FreedGoThreeJS_Prototype );
+        }
         this.Render.Setup( this );
+        if (this.Render.SceneParent) {
+            this.Render.Build( this.Render.SceneParent );
+        }
 
         this.State.OnCoreUpdated = (() => {
             this.Render.Update();
         });
+
+        this.State.DoCoreChangedLocally();
+    },
+
+    Setup : function( board ) {
+        this.ChangeBoard( board );
+        
     },
 
     OnHoveredOver : function(index) {
