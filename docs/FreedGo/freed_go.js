@@ -174,6 +174,8 @@ var FreedGoThreeJS_Prototype = {
     }
 };
 
+var FreedGo_Boards_Mobius = FreedGoBoards["mobius"];
+
 var FreedGoPrototype_Game = {
     Board : FreedGo_Boards_Mobius,
     State : FreedGoPrototype_State,
@@ -197,8 +199,15 @@ var FreedGoPrototype_Game = {
     },
 
     OnClickedIndex : function(index) {
-        this.State.Core.Nodes[ index ] = this.State.Core.Turn;
-        this.State.Core.Turn = ((this.State.Core.Turn + 1)%2);
+        var cur = this.State.Core.Nodes[ index ];
+        var to = this.State.Core.Turn;
+        if (cur >= 0) {
+            to = -1;
+        }
+        this.State.Core.Nodes[ index ] = to;
+        if (to >= 0) {
+            this.State.Core.Turn = ((this.State.Core.Turn + 1)%2);
+        }
         this.State.DoCoreChangedLocally();
     },
 
