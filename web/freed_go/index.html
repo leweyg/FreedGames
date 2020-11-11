@@ -160,7 +160,7 @@
 				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
                 mouse.y = - ( ( event.clientY - container.offsetTop ) / window.innerHeight ) * 2 + 1;
 
-                camera_rotate_around = mouse.x * 120.0;
+                camera_rotate_around = mouse.x * 60.0;
                 camera_rotate_up = mouse.y * 60.0;
 
                 mousePrevious.copy( mouse );
@@ -190,7 +190,8 @@
                 
 				raycaster.setFromCamera( mouse, camera );
 
-                const intersects = raycaster.intersectObjects( scene.children );
+                //const intersects = raycaster.intersectObjects( scene.children );
+                const intersects = raycaster.intersectObject( scene, true );
 
                 for (var ii in intersects) {
                     var info = intersects[ii].object;

@@ -40,6 +40,7 @@ var FreedGoPrototype_State = {
 
 var FreedGoThreeJS_Prototype = {
     Game : null,
+    SceneRoot : null,
     SceneParent : null,
     Stones : [],
     Cursors : [],
@@ -89,7 +90,12 @@ var FreedGoThreeJS_Prototype = {
         }
     },
 
-    Build : function( scene ) {
+    Build : function( contextObj ) {
+
+        this.SceneRoot = contextObj;
+        var scene = new THREE.Group();
+        this.SceneRoot.add( scene );
+
         this.SceneParent = scene;
         this.Stones = [];
 
