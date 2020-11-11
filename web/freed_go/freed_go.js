@@ -45,6 +45,8 @@ var FreedGoThreeJS_Prototype = {
     Cursors : [],
     MatsByType : {},
     RedrawCallback : null,
+    DefaultScale : new THREE.Vector3(1,1,0.3),
+    Temp1 : new THREE.Vector3(),
 
     Setup : function(game) {
         this.Game = game;
@@ -56,8 +58,14 @@ var FreedGoThreeJS_Prototype = {
             var state = this.Game.State.Core.Nodes[ni];
             var from = this.Stones[ni];
             var mat = this.MatsByType[ state ];
+            var scl = this.Temp1;
             if (from.material != mat) {
                 from.material = mat;
+            }
+            scl.copy( this.DefaultScale );
+            if (state < 0) scl.multiplyScalar( 0.61 );
+            if (from.scale.x != scl.x) {
+                from.scale.copy( scl );
             }
         }
 
@@ -83,7 +91,7 @@ var FreedGoThreeJS_Prototype = {
         this.Stones = [];
 
         this.MatsByType = {};
-        this.MatsByType[-1] = new THREE.MeshLambertMaterial( { color: 0xccCCcc } );
+        this.MatsByType[-1] = new THREE.MeshLambertMaterial( { color: 0xb17c52 } );
         this.MatsByType[ 0] = new THREE.MeshLambertMaterial( { color: 0xffFFff } );
         this.MatsByType[ 1] = new THREE.MeshLambertMaterial( { color: 0x333333 } );
 
@@ -109,7 +117,7 @@ var FreedGoThreeJS_Prototype = {
             lookTo.multiplyScalar( board_scale );
             stone.lookAt( lookTo );
 
-            stone.scale.set( 1, 1, 0.3 );
+            stone.scale.copy( this.DefaultScale );
 
             //stone.position.copy( node.Position );
 
@@ -171,6 +179,10 @@ var FreedGoPrototype_Game = {
         this.State.DoCoreChangedLocally();
     },
 
-    Update : function() {
+    OnClickedIndex : function(index) {
+        this.State.Core.Nodes[ index ] = this.State.Core.Turn;
+        this.State.Core.Turn = ((this.State.Core.Turn + 1)%2);
+        this.State.DoCoreChangedLocally();
     },
+
 };

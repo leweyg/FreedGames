@@ -8,7 +8,8 @@
 		<style>
 			body {
 				background-color: #6caf56;
-				color: rgb(236, 236, 236);
+                color: rgb(236, 236, 236);
+                /* color-adjust: #b17c52; */
 			}
 			a {
 				color: #08f;
@@ -111,7 +112,8 @@
 				//stats = new Stats();
 				//container.appendChild( stats.dom );
 
-				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+                document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+                document.addEventListener( 'mouseup', onDocumentMouseUp, false );
 
 				//
 
@@ -139,7 +141,14 @@
                 
                 requestRedraw();
 
-			}
+            }
+            
+            function onDocumentMouseUp( event ) {
+                if (INTERSECTED && INTERSECTED.userData && INTERSECTED.userData.Node) {
+                    var index = INTERSECTED.userData.Node.Index;
+                    game.OnClickedIndex( index );
+                }
+            }
 
 			function onDocumentMouseMove( event ) {
 
@@ -174,6 +183,22 @@
                 }
             }
 
+            function findBestUnderMouse() {
+                
+				raycaster.setFromCamera( mouse, camera );
+
+                const intersects = raycaster.intersectObjects( scene.children );
+
+                for (var ii in intersects) {
+                    var info = intersects[ii].object;
+                    if (info.userData && info.userData.Node) {
+                        return info;
+                    }
+                }
+
+                return undefined;
+            }
+
 			function render() {
 
 				//theta += 0.2;
@@ -190,32 +215,20 @@
 
 				// find intersections
 
-				raycaster.setFromCamera( mouse, camera );
+                const next = findBestUnderMouse();
+                if ( INTERSECTED != next ) {
 
-				const intersects = raycaster.intersectObjects( scene.children );
+                    INTERSECTED = next;
 
-				if ( intersects.length > 0 ) {
+                    if (INTERSECTED) {
+                        var index = INTERSECTED.userData.Node.Index;
+                        game.OnHoveredOver( index );
+                    } else {
+                        game.OnHoveredOver( -1 );
+                    }
 
-					if ( INTERSECTED != intersects[ 0 ].object ) {
+                }
 
-                        randomizeEmissive( INTERSECTED );
-                        INTERSECTED = intersects[ 0 ].object;
-                        randomizeEmissive( INTERSECTED );
-
-                        if (INTERSECTED.userData && INTERSECTED.userData.Node) {
-                            var index = INTERSECTED.userData.Node.Index;
-                            game.OnHoveredOver( index );
-                        }
-
-					}
-
-				} else {
-
-                    randomizeEmissive( INTERSECTED );
-
-					INTERSECTED = null;
-
-				}
 
 				renderer.render( scene, camera );
 
