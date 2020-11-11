@@ -101,6 +101,7 @@ var FreedGoThreeJS_Prototype = {
 
         this.SceneParent = contextObj;
         var scene = new THREE.Group();
+        //scene.quaternion.setFromAxisAngle(new THREE.Vector3(0,0,1),-90);
         this.SceneRoot = scene;
 
         this.SceneParent.add( scene );
