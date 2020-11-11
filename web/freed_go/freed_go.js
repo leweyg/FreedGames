@@ -63,7 +63,10 @@ var FreedGoThreeJS_Prototype = {
                 from.material = mat;
             }
             scl.copy( this.DefaultScale );
-            if (state < 0) scl.multiplyScalar( 0.61 );
+            if (state < 0) {
+                scl.multiplyScalar( 0.61 );
+                scl.z = this.DefaultScale.z;
+            }
             if (from.scale.x != scl.x) {
                 from.scale.copy( scl );
             }
@@ -93,11 +96,13 @@ var FreedGoThreeJS_Prototype = {
         this.MatsByType = {};
         this.MatsByType[-1] = new THREE.MeshLambertMaterial( { color: 0xb17c52 } );
         this.MatsByType[ 0] = new THREE.MeshLambertMaterial( { color: 0xffFFff } );
-        this.MatsByType[ 1] = new THREE.MeshLambertMaterial( { color: 0x333333 } );
+        this.MatsByType[ 1] = new THREE.MeshLambertMaterial( { color: 0x656565 } );
 
-        const geometry = new THREE.SphereBufferGeometry( 3.141, 12, 12 );
+        const piece_scale = 26 * this.Game.Board.NodeScale;
+
+        const geometry = new THREE.SphereBufferGeometry( piece_scale, 12, 12 );
         const board_scale = 35.0;
-        const piece_scale = 0.1;
+        
         var lookTo = new THREE.Vector3();
         var referenceUp = new THREE.Vector3(0,0,1);
 

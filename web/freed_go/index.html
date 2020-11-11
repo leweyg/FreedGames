@@ -64,9 +64,12 @@
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
 
 				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0x6caf56 );
+                scene.background = new THREE.Color( 0x6caf56 );
+                
+                var ambientLight = new THREE.AmbientLight( 0xa0a0a0 ); // soft white light
+                scene.add( ambientLight );
 
-				light = new THREE.DirectionalLight( 0xffffff, 1 );
+				light = new THREE.DirectionalLight( 0x6f6f6f, 1 );
                 light.position.set( 1, 1, 1 ).normalize();
                 light.target = scene;
                 scene.add( light );
@@ -203,9 +206,10 @@
 
 				//theta += 0.2;
 
-				camera.position.x = radius * Math.sin( THREE.MathUtils.degToRad( camera_rotate_around ) );
+                var upScl = Math.cos( THREE.MathUtils.degToRad( camera_rotate_up ) );
+				camera.position.x = radius * Math.sin( THREE.MathUtils.degToRad( camera_rotate_around ) ) * upScl;
 				camera.position.y = radius * Math.sin( THREE.MathUtils.degToRad( camera_rotate_up ) );
-				camera.position.z = radius * Math.cos( THREE.MathUtils.degToRad( camera_rotate_around ) );
+				camera.position.z = radius * Math.cos( THREE.MathUtils.degToRad( camera_rotate_around ) ) * upScl;
 				camera.lookAt( scene.position );
 
                 camera.updateMatrixWorld();
