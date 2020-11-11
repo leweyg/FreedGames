@@ -219,14 +219,19 @@
                 }
             }
 
+            function customLerp(a, b, t) {
+                return ((a*(1-t)) + (b*t));
+            }
+
             function onInnerMouseEvent( event, isDown, isMove ) {
             
                 mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
                 mouse.y = - ( ( event.clientY - container.offsetTop ) / window.innerHeight ) * 2 + 1;
 
                 if (isMove) {
-                    camera_rotate_around = mouse.x * 60.0;
-                    camera_rotate_up = mouse.y * 60.0;
+                    var lerpFactor = 0.03;
+                    camera_rotate_around = customLerp( camera_rotate_around, mouse.x * 60.0, lerpFactor );
+                    camera_rotate_up = customLerp( camera_rotate_up, mouse.y * 60.0, lerpFactor );
                 }
 
                 mousePrevious.copy( mouse );
