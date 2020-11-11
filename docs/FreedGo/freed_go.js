@@ -23,6 +23,19 @@ var FreedGoPrototype_State = {
         this.NewBoard();
     },
 
+    NewBoard : function() {
+        var board = this.Game.Board;
+        var numNodes = board.Nodes.length;
+        this.Core.Turn = 0;
+        this.Core.Nodes = []; 
+        this.Core.Nodes.length = numNodes;
+        this.Core.Taken = [ 0, 0 ];
+        this.Fast.Hovers = [ -1, -1 ];
+        for (var i=0; i<numNodes; i++) {
+            this.Core.Nodes[i] = -1;
+        }
+    },
+
     DoFastChangedLocally : function() {
         for (var i in this.OnFastUpdated) {
             this.OnFastUpdated[i]();
@@ -36,18 +49,87 @@ var FreedGoPrototype_State = {
         this.DoFastChangedLocally();
     },
 
-    NewBoard : function() {
-        var board = this.Game.Board;
-        var numNodes = board.Nodes.length;
-        this.Core.Turn = 0;
-        this.Core.Nodes = []; 
-        this.Core.Nodes.length = numNodes;
-        this.Core.Taken = [ 0, 0 ];
-        this.Fast.Hovers = [ -1, -1 ];
-        for (var i=0; i<numNodes; i++) {
-            this.Core.Nodes[i] = -1;
+    CalcGroup : function(index) {
+        var result = {
+            Frees : 0,
+            Size : 0,
+            Closeds : 0,
+            GroupType : 0,
+            Indices : {},
+            Others : {},
+            Queue : [],
+        };
+        result.Queue.push( index );
+        result.GroupType = this.Core.Nodes[ index ];;
+        while (result.Queue.length > 0) {
+            var cur = result.Queue.pop();
+            var curType = this.Core.Nodes[ cur ];
+            if (curType == result.GroupType) {
+                if (cur in result.Indices) continue;
+
+                result.Size++;
+                result.Indices[cur] = 1;
+                var node = this.Game.Board.Nodes[cur];
+                for (var ni in node.Neighbors) {
+                    var oi = node.Neighbors[ni];
+                    result.Queue.push(oi);
+                }
+            } else {
+                if (cur in result.Others) continue;
+                
+                result.Others[cur] = 1;
+                if (curType < 0) {
+                    result.Frees++;
+                } else {
+                    result.Closeds++;
+                }
+            }
         }
+
+        return result;
     },
+
+    DoPlaceStone : function(index,to) {
+        var was = this.Core.Nodes[ index ];
+        this.Core.Nodes[ index ] = to;
+        var atGroup = this.CalcGroup( index );
+        if (atGroup.Frees == 0) {
+            this.Core.Nodes[ index ] = was;
+            return false;
+        }
+
+        var node = this.Game.Board.Nodes[ index ];
+        for (var ni in node.Neighbors) {
+            var oi = node.Neighbors[ni];
+            var group = this.CalcGroup(oi);
+            if ((group.GroupType>=0) && (group.Frees == 0)) {
+                // take the group:
+                for (var di in group.Indices) {
+                    this.Core.Nodes[di] = -1;
+                    this.Core.Taken[to]++;
+                }
+            }
+        }
+        return true;
+    },
+
+    DoClickedIndex : function(index) {
+        if ((index < 0) || (index >= this.Core.Nodes.length)) {
+            return false;
+        }
+        var cur = this.Core.Nodes[ index ];
+        var to = this.Core.Turn;
+        if (cur >= 0) {
+            to = -1;
+            var otherTurn = ((cur + 1)%2);
+            this.Core.Taken[otherTurn]++;
+        }
+        if (this.DoPlaceStone( index, to )) {
+            this.Core.Turn = ((this.Core.Turn + 1)%2);
+        }
+        this.DoCoreChangedLocally();
+    }
+
 };
 
 var FreedGoThreeJS_Prototype = {
@@ -243,16 +325,8 @@ var FreedGoPrototype_Game = {
     },
 
     OnClickedIndex : function(index) {
-        var cur = this.State.Core.Nodes[ index ];
-        var to = this.State.Core.Turn;
-        if (cur >= 0) {
-            to = -1;
-        }
-        this.State.Core.Nodes[ index ] = to;
-        if (to >= 0) {
-            this.State.Core.Turn = ((this.State.Core.Turn + 1)%2);
-        }
-        this.State.DoCoreChangedLocally();
+        this.State.DoClickedIndex(index);
+        
     },
 
 };
