@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>three.js webgl - interactive cubes</title>
+		<title>Freed Go - Lewcid.com</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link type="text/css" rel="stylesheet" href="main.css">
 		<style>
 			body {
-				background-color: #f0f0f0;
-				color: #444;
+				background-color: #09b45f;
+				color: rgb(236, 236, 236);
 			}
 			a {
 				color: #08f;
@@ -17,8 +17,11 @@
 	</head>
 	<body>
 
-		<div id="info">
-			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - interactive cubes
+		<div id="not_info">
+            Freed Go - <a href="https://threejs.org" target="_blank" rel="noopener">lewcid.com</a> 
+            - <select>
+                <option>mobius</option>
+                </select>
         </div>
         <script src="three.js"></script>
 
@@ -38,7 +41,7 @@
 			const radius = 100;
 
 			init();
-			animate();
+            animate();
 
 			function init() {
 
@@ -90,16 +93,27 @@
 
 				//
 
-				window.addEventListener( 'resize', onWindowResize, false );
+                window.addEventListener( 'resize', onWindowResize, false );
+                
+                requestRedraw();
 
-			}
+            }
+            
+            var _requestInProgress = false;
+            function requestRedraw() {
+                if (_requestInProgress) return;
+                _requestInProgress = true;
+                requestAnimationFrame( animate );
+            }
 
 			function onWindowResize() {
 
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
 
-				renderer.setSize( window.innerWidth, window.innerHeight );
+                renderer.setSize( window.innerWidth, window.innerHeight );
+                
+                requestRedraw();
 
 			}
 
@@ -110,13 +124,15 @@
 				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
+                requestRedraw();
 			}
 
 			//
 
 			function animate() {
+                _requestInProgress = false;
 
-				requestAnimationFrame( animate );
+				//requestAnimationFrame( animate );
 
 				render();
 				//stats.update();
