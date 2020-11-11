@@ -122,11 +122,13 @@
             }
             
             var _requestInProgress = false;
+            
             function requestRedraw() {
                 if (_requestInProgress) return;
                 _requestInProgress = true;
                 requestAnimationFrame( animate );
             }
+            game.Render.RedrawCallback = (() => requestRedraw());
 
 			function onWindowResize() {
 
@@ -142,7 +144,6 @@
 			function onDocumentMouseMove( event ) {
 
                 event.preventDefault();
-                
 
 				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
                 mouse.y = - ( ( event.clientY - container.offsetTop ) / window.innerHeight ) * 2 + 1;
@@ -204,7 +205,6 @@
                         if (INTERSECTED.userData && INTERSECTED.userData.Node) {
                             var index = INTERSECTED.userData.Node.Index;
                             game.OnHoveredOver( index );
-                            game.Update();
                         }
 
 					}

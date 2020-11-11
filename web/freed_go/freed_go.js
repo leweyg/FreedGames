@@ -13,10 +13,15 @@ var FreedGoPrototype_State = {
         Taken : [],
         Hovers : [],
     },
+    OnCoreUpdated : (() => {}),
 
     Setup : function(game) {
         this.Game = game;
         this.NewBoard();
+    },
+
+    DoCoreChangedLocally : function() {
+        this.OnCoreUpdated();
     },
 
     NewBoard : function() {
@@ -39,6 +44,7 @@ var FreedGoThreeJS_Prototype = {
     Stones : [],
     Cursors : [],
     MatsByType : {},
+    RedrawCallback : null,
 
     Setup : function(game) {
         this.Game = game;
@@ -65,6 +71,10 @@ var FreedGoThreeJS_Prototype = {
             } else {
                 cursor.visible = false;
             }
+        }
+
+        if (this.RedrawCallback) {
+            this.RedrawCallback();
         }
     },
 
@@ -150,13 +160,17 @@ var FreedGoPrototype_Game = {
         this.State.Setup( this );
         this.Render = Object.create( FreedGoThreeJS_Prototype );
         this.Render.Setup( this );
+
+        this.State.OnCoreUpdated = (() => {
+            this.Render.Update();
+        });
     },
 
     OnHoveredOver : function(index) {
         this.State.Core.Hovers[ this.State.Core.Turn ] = index;
+        this.State.DoCoreChangedLocally();
     },
 
     Update : function() {
-        this.Render.Update();
     },
 };
