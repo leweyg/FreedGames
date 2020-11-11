@@ -96,8 +96,10 @@ var FreedGoPrototype_State = {
         var node = this.Game.Board.Nodes[ index ];
         for (var ni in node.Neighbors) {
             var oi = node.Neighbors[ni];
+            if (this.Core.Nodes[oi] < 0) continue;
+
             var group = this.CalcGroup(oi);
-            if ((group.GroupType>=0) && (group.Frees == 0)) {
+            if (group.Frees == 0) {
                 // take the group:
                 for (var di in group.Indices) {
                     this.Core.Nodes[di] = -1;
