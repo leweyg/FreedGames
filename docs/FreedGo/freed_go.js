@@ -150,13 +150,16 @@ var FreedGoThreeJS_Prototype = {
                 var node = nodeInfo[ni];
                 var from = this.Stones[ni];
                 for (var ei=0; ei<node.Neighbors.length; ei++) {
-                    var to = this.Stones[ node.Neighbors[ei] ];
+                    var ti = node.Neighbors[ei];
+                    if (ti < ni) continue;
+                    var to = this.Stones[ ti ];
                     linePoints.push( from.position.clone() );
                     linePoints.push( to.position.clone() );
                 }
             }
             const lineMat = new THREE.LineBasicMaterial({
-                color: 0x000000
+                color: 0x000000,
+                //linewidth: 3,
             });
             const lineGeo = new THREE.BufferGeometry().setFromPoints( linePoints );
             const lineObj = new THREE.LineSegments( lineGeo, lineMat );
