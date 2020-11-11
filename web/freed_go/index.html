@@ -141,10 +141,11 @@
 
 			function onDocumentMouseMove( event ) {
 
-				event.preventDefault();
+                event.preventDefault();
+                
 
 				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-                mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+                mouse.y = - ( ( event.clientY - container.offsetTop ) / window.innerHeight ) * 2 + 1;
 
                 camera_rotate_around = mouse.x * 120.0;
                 camera_rotate_up = mouse.y * 60.0;
@@ -168,7 +169,7 @@
             
             function randomizeEmissive(INTERSECTED) {
                 if ( INTERSECTED && INTERSECTED.material.emissive ) {
-                    INTERSECTED.material.emissive.setHex( 0xff0000 );
+                    //INTERSECTED.material.emissive.setHex( 0xff0000 );
                 }
             }
 
@@ -199,6 +200,12 @@
                         randomizeEmissive( INTERSECTED );
                         INTERSECTED = intersects[ 0 ].object;
                         randomizeEmissive( INTERSECTED );
+
+                        if (INTERSECTED.userData && INTERSECTED.userData.Node) {
+                            var index = INTERSECTED.userData.Node.Index;
+                            game.OnHoveredOver( index );
+                            game.Update();
+                        }
 
 					}
 
