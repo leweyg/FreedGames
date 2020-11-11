@@ -134,6 +134,11 @@ Block* DraggedBlock = 0;
 ipnt DragTotal;
 int ActiveDist = 40;
 
+void Test_LevelChanged(void* data) {
+    DraggedBlock = nullptr;
+    DragMode = DM_NONE;
+}
+
 int BestDragAxis(ipnt* dragtotal)
 {
 	fpnt drag = ITOFPNT(*dragtotal);
@@ -361,6 +366,7 @@ void Test_Main()
 	GGame = Game::Create();
 	LC_Event_GLSettingsInit = Test_GLSettings;
 	//Core.Graphics->mIsShiny = true;
+    GGame->mEvent_LevelChanged = Test_LevelChanged;
 
 	Core.Graphics->BackgroundColor = ResColor::Create( 98.0/255.0, 120.0/255.0, 191.0/255.0, 1.0);
 	//Core.Graphics->BackgroundColor = ResColor::Create( Color4f::FromRGB( 0x005073 ) );
@@ -529,7 +535,9 @@ int main(int argc,char **argv)
   //Comment this to remove frame meter:
   glutIdleFunc(Display);
 
-  glutMainLoop(); 
+  glutMainLoop();
+    
+    glutPostRedisplay();
 
   return 0; 
 } 
