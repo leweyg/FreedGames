@@ -11,6 +11,14 @@
 
 char EndGameMessage[200] = {0};
 
+void ExportFpntAsJson(std::ofstream& fout, fpnt v) {
+    fout << "{";
+    fout << "\"x\":" << v.x << ", ";
+    fout << "\"y\":" << v.y << ", ";
+    fout << "\"z\":" << v.z << "";
+    fout << "}";
+}
+
 struct GoNode
 {
 	int Index;
@@ -23,6 +31,21 @@ struct GoNode
 	void AddNeighbor(int ni);
 	void SafeAddNeighbor(int ni);
 	int& operator[] (int i) {return Neighbors[i];};
+    
+    void ExportAsJson(std::ofstream& fout) {
+        fout << "{";
+        fout << "\"Index\":" << Index << ", ";
+        fout << "\"Neighbors\":[";
+        for (int i=0; i<NumNeighbors; i++) {
+            if (i != 0) fout << ",";
+            fout << Neighbors[i];
+        }
+        fout << "], ";
+        fout << "\"Position\":"; ExportFpntAsJson(fout, Position); fout << ", ";
+        fout << "\"Normal\":"; ExportFpntAsJson(fout, Normal); fout << ", ";
+        fout << "\"NumNeighbors\":" << NumNeighbors << " ";
+        fout << "}";
+    }
 };
 
 void GoNode::SafeAddNeighbor(int ni)
@@ -71,6 +94,31 @@ public:
 		Nodes = 0;
 	};
 	GoNode* operator[] (int i) {return &Nodes[i];};
+    
+    void ExportAuto() {
+        std::string fileName( "/custom_path_here/" );
+        fileName += Name;
+        fileName += ".go_3d.json";
+        printf("Writing file '%s'...", fileName.c_str());
+        std::ofstream fout(fileName.c_str());
+        this->ExportAsJson(fout);
+        fout.close();
+    }
+    
+    void ExportAsJson(std::ofstream& fout) {
+        fout << "{";
+        fout << "\"Name\":\"" << Name << "\", ";
+        fout << "\"NodeScale\":" << NodeScale << ", ";
+        fout << "\"StartP0\":" << StartP0 << ", ";
+        fout << "\"StartP1\":" << StartP1 << ", ";
+        fout << "\"Nodes\":[\n";
+        for (int i=0; i<NumNodes; i++) {
+            if (i != 0) fout << ",\n";
+            Nodes[i].ExportAsJson(fout);
+        }
+        fout << "\n] ";
+        fout << "}";
+    };
 
 	Board() {Nodes=0; NumNodes=0; NodeScale=1.0f; Name=0;};
 	~Board() {UnInit();};
@@ -961,7 +1009,8 @@ bool CreateBoard_FromFile(Board* board, char* filename)
 }
 
 
-bool GenBoardFromName(char* name, Board* board, bool onlytest)
+
+bool GenBoardFromName_Internal(char* name, Board* board, bool onlytest)
 {
 	int hintw, hinth;
 
@@ -1028,8 +1077,18 @@ bool GenBoardFromName(char* name, Board* board, bool onlytest)
 	}
 	else
 	{
-		return CreateBoard_FromFile(board, name);
+		auto result = CreateBoard_FromFile(board, name);
+        
+        return result;
 	}
 
 	return false;
 }
+
+
+bool GenBoardFromName(char* name, Board* board, bool onlytest) {
+    bool result = GenBoardFromName_Internal( name, board, onlytest );
+    //board->ExportAuto();
+    return result;
+}
+
