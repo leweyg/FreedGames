@@ -92,11 +92,6 @@ var FreedGoPrototype_State = {
     DoPlaceStone : function(index,to) {
         var was = this.Core.Nodes[ index ];
         this.Core.Nodes[ index ] = to;
-        var atGroup = this.CalcGroup( index );
-        if (atGroup.Frees == 0) {
-            this.Core.Nodes[ index ] = was;
-            return false;
-        }
 
         var node = this.Game.Board.Nodes[ index ];
         for (var ni in node.Neighbors) {
@@ -110,6 +105,14 @@ var FreedGoPrototype_State = {
                 }
             }
         }
+
+        var atGroup = this.CalcGroup( index );
+        if (atGroup.Frees == 0) {
+            this.Core.Nodes[ index ] = was;
+            // NOTE: revert all changes here, but probably weren't any
+            return false;
+        }
+
         return true;
     },
 
