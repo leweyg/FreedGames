@@ -23,15 +23,81 @@
         <script src="boards_all.js"></script>
         <script src="freed_go.js"></script>
 
+        <!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/3.1.0/firebase.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyCp0000xxvBPw7OrUDTMqAqHU7AlhGK4gE",
+    authDomain: "freedgo-4a947.firebaseapp.com",
+    databaseURL: "https://freedgo-4a947.firebaseio.com",
+    projectId: "freedgo-4a947",
+    storageBucket: "freedgo-4a947.appspot.com",
+    messagingSenderId: "460959755744",
+    appId: "1:460959755744:web:c00861c4e0380966cfcf85"
+  };
+  // Initialize Firebase
+  var firebaseIsInited = false;
+  function firebaseEnsure() {
+      if (firebaseIsInited) return;
+      firebaseIsInited = true;
+
+      firebase.initializeApp(firebaseConfig);
+  }
+  
+</script>
+
+
+<script>
+    // custom firebase wrapper:
+
+    function firebaseReadAsync(path,callback) {
+        firebaseEnsure();
+        var ref = firebase.database().ref(path);
+        ref.on("value",function(snapshot) {
+        //ref.once("value").then(function(snapshot) {
+            var key = snapshot.key; // "ada"
+            //var childKey = snapshot.child("name/last").key; // "last"
+            var v = snapshot.val();
+            callback( v );
+        });
+    }
+
+    function firebaseWriteAppend(path,val) {
+        firebaseEnsure();
+        var ref = firebase.database().ref(path);
+        ref.push(val);
+    }
+
+    function firebaseDelete(path) {
+        firebaseEnsure();
+        var ref = firebase.database().ref(path);
+        ref.remove().then(function() {
+                console.log("Remove succeeded.")
+            })
+            .catch(function(error) {
+                console.log("Remove failed: " + error.message)
+            });
+    }
+</script>
+
+
         <div id="not_info">
             Freed Go 
             - <span id="board_title"></span>
-            - <a href="http://lewcid.com/" target="_blank" rel="noopener">lewcid.com</a> 
+            
             - <select id="new_board_selector">
                 </select>
+            - <a onclick="doSaveOrShare();" style="display: none;">save/share</a>
+            - <a href="http://lewcid.com/" target="_blank" rel="noopener">lewcid.com</a> 
         </div>
         <script>
             var game = null;
+            var freedGoDataPath = "public/rooms";
 
             function setupBoardSelection() {
                 var boards = FreedGoBoards;
@@ -51,6 +117,11 @@
                 });
             }
             setupBoardSelection();
+
+
+            function doSaveOrShare() {
+                firebaseWriteAppend( freedGoDataPath, game.State.Core );
+            }
         </script>
 
         <div id="main_gl_div">
