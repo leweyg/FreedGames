@@ -207,7 +207,7 @@ var FreedGoThreeJS_Prototype = {
         for (var ti=0; ti<2; ti++) {
             var cursor = this.Cursors[ti];
             var hover = this.Game.State.Fast.Hovers[ti];
-            if (hover >= 0) {
+            if (hover >= 0 && hover<this.Stones.length) {
                 var over = this.Stones[ hover ];
                 cursor.position.copy( over.position );
                 cursor.visible = true;
