@@ -33,6 +33,10 @@ var FreedGoPrototype_State = {
         this.NewBoard();
     },
 
+    PreCoreSave : function() {
+        this.Core.BoardName = this.Game.Board.Name;
+    },
+
     NewBoard : function() {
         var board = this.Game.Board;
         var numNodes = board.Nodes.length;
@@ -60,6 +64,9 @@ var FreedGoPrototype_State = {
     },
 
     DoCoreChangedRemote : function() {
+        if (this.Core.BoardName != this.Game.Board.Name) {
+            this.Game.Board 
+        }
         for (var i in this.OnCoreUpdated) {
             this.OnCoreUpdated[i]();
         }
@@ -310,6 +317,17 @@ var FreedGoPrototype_Game = {
     Render : FreedGoThreeJS_Prototype,
     OnCoreUpdated : [],
     OnFastUpdated : [],
+
+    CheckBoardName : function(name) {
+        if (this.Board.Name == name) return;
+        var to = FreedGoBoards[name];
+        if (!to) {
+            console.log("Unknown board '" + name + "'");
+            return;
+        }
+
+        this.ChangeBoard(to);
+    },
 
     ChangeBoard : function( board ) {
         this.Board = board || FreedGo_Boards_Mobius;

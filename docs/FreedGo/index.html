@@ -116,7 +116,11 @@
                     checkFreedGoRoom();
                 </script>
             -  
-            <a onclick="doSaveAsNew();" id="main_share_new">save/share</a>
+            <span id="main_copy_link_span">
+                <a onclick="doCopyLink();" id="main_copy_link">copy room link</a>
+                or 
+            </span>
+            <a onclick="doSaveAsNew();" id="main_share_new">save/shareable</a>
 
             - <a href="http://lewcid.com/" target="_blank" rel="noopener">lewcid.com</a> 
         </div>
@@ -145,6 +149,7 @@
 
 
             function doSaveAsNew() {
+                game.State.PreCoreSave();
                 var roomData = {
                     core:game.State.Core, 
                     fast:game.State.Fast 
@@ -165,6 +170,7 @@
             function doSaveCoreOrFast(isCore,isFast) {
                 var path = freedGoDataPath + "/" + FreedGoRoomName;
                 if (isCore) {
+                    game.State.PreCoreSave();
                     firebaseWriteUpdate( path + "/core", game.State.Core );
                 }
                 if (isFast) {
@@ -179,6 +185,7 @@
                 // continue here.
                 firebaseReadAsync(freedGoDataPath + "/" + roomName + "/core" , (state) => {
                     if (!state) return;
+                    game.CheckBoardName( state.BoardName );
                     game.State.Core = state;
                     game.State.DoCoreChangedRemote();
                 });
@@ -192,7 +199,25 @@
             }
 
             if (FreedGoRoomName) {
-                main_share_new.innerHTML = "branch";
+                main_share_new.innerHTML = "branch room";
+            } else {
+                main_copy_link_span.style.display = "none";
+            }
+
+            function messageList_CopyMessageByKey(message_key) {
+                var intoEl = main_post_text;
+                intoEl.value = message_key;
+                intoEl.style.display = "inline";
+                intoEl.select();
+                var copied = document.execCommand('copy');
+                if (copied) {
+                    alert("Copied: " + message_key);
+                }
+                intoEl.style.display = "none";
+            }
+
+            function doCopyLink() {
+                messageList_CopyMessageByKey( window.location.href );
             }
 
         </script>
@@ -483,6 +508,7 @@
         
         <div>
             By <a href="http://www.lewcid.com/lg/aboutme.html">Lewey Geselowitz</a>, based on <a href="http://www.lewcid.com/lg/lc/freedgo.html">Freed Go (v1)</a>.
+            <input type="text" id="main_post_text" style="display: none;" />
         </div>
         <div>
             <a href="freed_go.jpg"><picture><img src="freed_go.jpg" style="max-width: 25%;" /></picture></a>
