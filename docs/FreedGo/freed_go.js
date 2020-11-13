@@ -370,6 +370,11 @@ var FreedGoPrototype_Game = {
         this.State.DoFastChangedLocally();
     },
 
+    OnLocalUserPassed : function(index) {
+        this.State.Core.Turn = ( this.State.Core.Turn + 1 ) % 2;
+        this.State.DoCoreChangedLocally();
+    },
+
     OnClickedIndex : function(index) {
         this.State.DoClickedIndex(index);
         

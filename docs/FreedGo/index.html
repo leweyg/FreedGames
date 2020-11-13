@@ -115,12 +115,14 @@
                     }
                     checkFreedGoRoom();
                 </script>
+        
             -  
             <span id="main_copy_link_span">
                 <a onclick="doCopyLink();" id="main_copy_link">copy room link</a>
                 or 
             </span>
             <a onclick="doSaveAsNew();" id="main_share_new">save/shareable</a>
+            - <a onclick="doPass();">pass</a>
 
             - <a href="http://lewcid.com/" target="_blank" rel="noopener">lewcid.com</a> 
         </div>
@@ -218,6 +220,11 @@
 
             function doCopyLink() {
                 messageList_CopyMessageByKey( window.location.href );
+            }
+
+
+            function doPass() {
+                game.OnLocalUserPassed( );
             }
 
         </script>
