@@ -11,6 +11,7 @@ var FreedGoPrototype_State = {
         Hovers : [],
     },
     Core : {
+        BoardName : "mobius",
         Turn : 0,
         Nodes : [],
         Taken : [],
@@ -26,6 +27,7 @@ var FreedGoPrototype_State = {
     NewBoard : function() {
         var board = this.Game.Board;
         var numNodes = board.Nodes.length;
+        this.Core.BoardName = this.Game.Board.Name;
         this.Core.Turn = 0;
         this.Core.Nodes = []; 
         this.Core.Nodes.length = numNodes;
@@ -36,17 +38,27 @@ var FreedGoPrototype_State = {
         }
     },
 
-    DoFastChangedLocally : function() {
+    DoFastChangedRemote : function() {
         for (var i in this.OnFastUpdated) {
             this.OnFastUpdated[i]();
         }
     },
 
-    DoCoreChangedLocally : function() {
+    DoFastChangedLocally : function() {
+        this.DoFastChangedRemote();
+        // and now publish the state... (save)
+    },
+
+    DoCoreChangedRemote : function() {
         for (var i in this.OnCoreUpdated) {
             this.OnCoreUpdated[i]();
         }
         this.DoFastChangedLocally();
+    },
+
+    DoCoreChangedLocally : function() {
+        this.DoCoreChangedRemote();
+        // and now publish the state... (save)
     },
 
     CalcGroup : function(index) {
