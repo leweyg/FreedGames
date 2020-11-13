@@ -5,6 +5,11 @@ var FreedGoGame_Create = function() {
     return ans;
 };
 
+var FreedGoSaveCallbacks = {
+    DoSaveCore : ((core) => {console.log("TODO: Save core");}),
+    DoSaveFast : ((fast) => {console.log("TODO: Save core");}),
+};
+
 var FreedGoPrototype_State = {
     Game : null,
     Fast : {
@@ -47,6 +52,7 @@ var FreedGoPrototype_State = {
     DoFastChangedLocally : function() {
         this.DoFastChangedRemote();
         // and now publish the state... (save)
+        FreedGoSaveCallbacks.DoSaveFast( this.Fast );
     },
 
     DoCoreChangedRemote : function() {
@@ -59,6 +65,7 @@ var FreedGoPrototype_State = {
     DoCoreChangedLocally : function() {
         this.DoCoreChangedRemote();
         // and now publish the state... (save)
+        FreedGoSaveCallbacks.DoSaveCore( this.Core );
     },
 
     CalcGroup : function(index) {
