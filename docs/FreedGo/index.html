@@ -73,10 +73,15 @@
         return ref.set(val);
     }
 
-    function firebaseWriteAppend(path,val) {
+    function firebaseWriteAppend(path,val,callback) {
         firebaseEnsure();
         var ref = firebase.database().ref(path);
-        return ref.push(val).key;
+        var action = ref.push(val);
+        var key = action.key;
+        if (callback) {
+            action.then(() => callback(key));
+        }
+        return key;
     }
 
     function firebaseDelete(path) {
@@ -93,7 +98,7 @@
 
 
         <div id="not_info">
-            Freed Go 
+            <span onclick="doGoReset();">Freed Go </span>
             - <span id="board_title"></span>
             
             - <select id="new_board_selector">
@@ -110,7 +115,9 @@
                     }
                     checkFreedGoRoom();
                 </script>
-            - <a onclick="doSaveAsNew();" >save/share</a>
+            -  
+            <a onclick="doSaveAsNew();" id="main_share_new">save/share</a>
+
             - <a href="http://lewcid.com/" target="_blank" rel="noopener">lewcid.com</a> 
         </div>
         <script>
@@ -142,8 +149,17 @@
                     core:game.State.Core, 
                     fast:game.State.Fast 
                 };
-                var roomId = firebaseWriteAppend( freedGoDataPath, roomData );
-                window.location.href = window.location.href + "?room=" + roomId;
+                //console.log("Sending...");
+                firebaseWriteAppend( freedGoDataPath, roomData, (roomId) => {
+                    console.log("Got room id...");
+                    var to = window.location.href.split('?')[0] + "?room=" + roomId;
+                    window.location.href = to;
+                });
+                //console.log("Waiting...");
+            }
+
+            function doGoReset() {
+                window.location.href = window.location.href.split('?')[0];
             }
 
             function doSaveCoreOrFast(isCore,isFast) {
@@ -162,15 +178,21 @@
 
                 // continue here.
                 firebaseReadAsync(freedGoDataPath + "/" + roomName + "/core" , (state) => {
+                    if (!state) return;
                     game.State.Core = state;
                     game.State.DoCoreChangedRemote();
                 });
                 firebaseReadAsync(freedGoDataPath + "/" + roomName + "/fast" , (state) => {
+                    if (!state) return;
                     game.State.Fast = state;
                     game.State.DoFastChangedLocally();
                 });
                 FreedGoSaveCallbacks.DoSaveCore = (() => doSaveCoreOrFast(true,false));
                 FreedGoSaveCallbacks.DoSaveFast = (() => doSaveCoreOrFast(false,true));
+            }
+
+            if (FreedGoRoomName) {
+                main_share_new.innerHTML = "branch";
             }
 
         </script>

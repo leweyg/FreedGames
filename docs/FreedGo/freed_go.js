@@ -6,8 +6,12 @@ var FreedGoGame_Create = function() {
 };
 
 var FreedGoSaveCallbacks = {
-    DoSaveCore : ((core) => {console.log("TODO: Save core");}),
-    DoSaveFast : ((fast) => {console.log("TODO: Save core");}),
+    DoSaveCore : ((core) => {
+        //console.log("TODO: Save core");
+    }),
+    DoSaveFast : ((fast) => {
+        //console.log("TODO: Save core");
+    }),
 };
 
 var FreedGoPrototype_State = {
