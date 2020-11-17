@@ -442,8 +442,8 @@
                 }
                 if (isMove && !GRABBED) {
                     var lerpFactor = 0.03;
-                    camera_rotate_around = customLerp( camera_rotate_around, mouse.x * 60.0, lerpFactor );
-                    camera_rotate_up = customLerp( camera_rotate_up, mouse.y * 60.0, lerpFactor );
+                    camera_rotate_around = customLerp( camera_rotate_around, mouse.x * 30.0, lerpFactor );
+                    camera_rotate_up = customLerp( camera_rotate_up, mouse.y * 30.0, lerpFactor );
                 }
                 if (!isMove && !isDown) {
                     GRABBED = null;
