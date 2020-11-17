@@ -143,6 +143,47 @@ var ShuzzleThreeJS_Prototype = {
         }
     },
 
+    BuildBackground : function( bounds ) {
+        var trianglePoints = [];
+        var triNormals = [];
+        var pushVertex = ((vert) => {
+            trianglePoints.push( vert.x );
+            trianglePoints.push( vert.y );
+            trianglePoints.push( vert.z );
+            triNormals.push( 0 );
+            triNormals.push( 0 );
+            triNormals.push( 1 );
+        });
+
+        var t = new THREE.Vector3();
+        var setAnd = ((ox,oy,oz)=>{
+            t.x = ox; t.y = oy; t.z = oz; return t;
+        });
+        var dz = bounds.min.z - 0.5;
+        for (var dx=bounds.min.x; dx<bounds.max.x; dx++) {
+            for (var dy=bounds.min.y; dy<bounds.max.y; dy++) {
+                pushVertex( setAnd( dx, dy, dz) );
+                pushVertex( setAnd( dx+1, dy, dz) );
+                pushVertex( setAnd( dx+1, dy+1, dz) );
+
+                pushVertex( setAnd( dx+1, dy+1, dz) );
+                pushVertex( setAnd( dx, dy+1, dz) );
+                pushVertex( setAnd( dx, dy, dz) );
+            }
+        }
+
+        var triGeo = new THREE.BufferGeometry();
+        triGeo.setAttribute( 'position', new THREE.Float32BufferAttribute( trianglePoints, 3 ) );
+        triGeo.setAttribute( 'normal', new THREE.Float32BufferAttribute( triNormals, 3 ) );
+        triGeo.computeBoundingSphere();
+
+        var flatMat = new THREE.MeshLambertMaterial( { color: 0x7777FF } );
+        var triMesh = new THREE.Mesh( triGeo, flatMat );
+
+        //triMesh.position.copy( center );
+        return triMesh;
+    },
+
     BuildBlock : function( block, state ) {
         
         var center = new THREE.Vector3( 0, 0, 0 );
@@ -199,11 +240,16 @@ var ShuzzleThreeJS_Prototype = {
             triGeo.setAttribute( 'normal', new THREE.Float32BufferAttribute( triNormals, 3 ) );
             triGeo.computeBoundingSphere();
 
-            const triMat = new THREE.MeshPhongMaterial( {
-                color: 0xaaaaaa, specular: 0xffffff, shininess: 250,
-                side: THREE.DoubleSide //, vertexColors: true
-            } );
-            var flatMat = new THREE.MeshLambertMaterial( { color: 0xb17c52 } );
+            var defaultColors = [
+                0xFF7777,
+                0x77FF77,
+                //0x7777FF,
+                0xFFff77,
+                0xFF77FF,
+            ];
+            var color = defaultColors[ block.Index % defaultColors.length ];
+
+            var flatMat = new THREE.MeshLambertMaterial( { color: color } );
             var triMesh = new THREE.Mesh( triGeo, flatMat );
 
             triMesh.position.copy( center );
@@ -255,6 +301,8 @@ var ShuzzleThreeJS_Prototype = {
         }
         this.GameGoal = this.BuildBlock( this.Game.Board.Board.Goal );
         this.SceneRoot.add( this.GameGoal );
+
+        this.SceneRoot.add( this.BuildBackground( this.Game.Board.Board.Bounds ) );
 
 
         if (true) {
