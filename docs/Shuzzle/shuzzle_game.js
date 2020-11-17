@@ -196,13 +196,15 @@ var ShuzzleThreeJS_Prototype = {
 
             var triGeo = new THREE.BufferGeometry();
             triGeo.setAttribute( 'position', new THREE.Float32BufferAttribute( trianglePoints, 3 ) );
+            triGeo.setAttribute( 'normal', new THREE.Float32BufferAttribute( triNormals, 3 ) );
             triGeo.computeBoundingSphere();
 
             const triMat = new THREE.MeshPhongMaterial( {
                 color: 0xaaaaaa, specular: 0xffffff, shininess: 250,
                 side: THREE.DoubleSide //, vertexColors: true
             } );
-            var triMesh = new THREE.Mesh( triGeo, triMat );
+            var flatMat = new THREE.MeshLambertMaterial( { color: 0xb17c52 } );
+            var triMesh = new THREE.Mesh( triGeo, flatMat );
 
             triMesh.position.copy( center );
             return triMesh;
