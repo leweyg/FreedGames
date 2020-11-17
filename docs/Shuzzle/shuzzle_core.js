@@ -8,10 +8,23 @@ var ShuzzleSaveCallbacks = {
     }),
 };
 
+var TensorMath = {
+    cloneVector3 : function(v) {
+        return { x:v.x, y:v.y, z:v.z };
+    },
+    copyVector3Into : function(dst, src) {
+        dst.x = src.x;
+        dst.y = src.y;
+        dst.z = src.z;
+        return dst;
+    }
+};
+
 var ShuzzlePrototype_State = {
     Game : null,
     Fast : {
         Hovers : [],
+        LightPos : {x:0,y:0,z:0},
     },
     Core : {
         BoardName : "1",
@@ -36,6 +49,8 @@ var ShuzzlePrototype_State = {
         this.Core.Blocks = []; 
         this.Core.Blocks.length = numNodes;
         this.Fast.Hovers = [ -1, -1 ];
+        this.Fast.LightPos = TensorMath.cloneVector3( this.Game.Board.Board.Bounds.max );
+        //this.Fast.LightPos.x = this.Game.Board.Board.Bounds.min.x;
         for (var i=0; i<numNodes; i++) {
             this.Core.Blocks[i] = { 
                 Center : {x:0, y:0, z:0},
@@ -74,11 +89,15 @@ var ShuzzlePrototype_State = {
         ShuzzleSaveCallbacks.DoSaveCore( this.Core );
     },
 
-    DoClickedIndex : function(index) {
-        if ((index < 0) || (index >= this.Core.Nodes.length)) {
+    DoClickedIndex : function(grabData) {
+        var index = grabData.index;
+        console.log("clicked " + grabData.type + " " + index);
+        if (index==undefined) return;
+        if ((index < 0) || (index >= this.Core.Blocks.length)) {
             return false;
         }
-        var cur = this.Core.Nodes[ index ];
+        var cur = this.Core.Blocks[ index ];
+        /*
         var to = this.Core.Turn;
         if (cur >= 0) {
             to = -1;
@@ -88,6 +107,7 @@ var ShuzzlePrototype_State = {
         if (this.DoPlaceStone( index, to )) {
             this.Core.Turn = ((this.Core.Turn + 1)%2);
         }
+        */
         this.DoCoreChangedLocally();
     }
 

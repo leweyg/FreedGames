@@ -244,13 +244,15 @@
             
             game = ShuzzleGame_Create();
 
-			let INTERSECTED;
+            let INTERSECTED;
+            let GRABBED;
             let theta = 0;
             let camera_rotate_around = 0;
             let camera_rotate_up = 0;
 
             const mouse = new THREE.Vector2();
             const mousePrevious = new THREE.Vector2();
+            const mouseDelta = new THREE.Vector2();
 			const radius = 100;
 
 			init();
@@ -325,6 +327,7 @@
 
                 document.addEventListener( 'mousemove', onDocumentMouseMove, false );
                 document.addEventListener( 'mouseup', onDocumentClicked, false );
+                document.addEventListener( 'mousedown', onDocumentMouseDown, false );
 
                 container.ontouchstart = ((evnt) => onTouchEventTop(evnt,true,false));
                 container.ontouchmove = ((evnt) => onTouchEventTop(evnt,true,true));
@@ -360,10 +363,11 @@
             }
             
             function onDocumentClicked( event ) {
-                if (INTERSECTED && INTERSECTED.userData && INTERSECTED.userData.Node) {
-                    var index = INTERSECTED.userData.Node.Index;
+                if (INTERSECTED && INTERSECTED.userData && INTERSECTED.userData.Grab) {
+                    var index = INTERSECTED.userData.Grab;
                     game.OnClickedIndex( index );
                 }
+                GRABBED = null;
             }
 
             var latestTouchStart = new THREE.Vector2();
@@ -390,6 +394,7 @@
                         }
                     } else if (!isDown && !isMove && !isSwiping) {
                         //isClick = true;
+                        //GRABBED = null;
                     }
                 } else {
                     //console.log( "TouchEnd " + latestTouchSwiping);
@@ -397,6 +402,7 @@
 
                         onDocumentClicked(evnt);
                     }
+                    GRABBED = null;
                 }
 
                 for (var ti=0; ti<evnt.touches.length; ti++) {
@@ -410,13 +416,37 @@
 
             function onInnerMouseEvent( event, isDown, isMove ) {
             
+                mousePrevious.copy( mouse );
                 mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
                 mouse.y = - ( ( event.clientY + window.pageYOffset - container.offsetTop ) / window.innerHeight ) * 2 + 1;
+                mouseDelta.copy( mouse );
+                mouseDelta.sub( mousePrevious );
 
-                if (isMove) {
+                if (isDown) {
+                    var under = updateUnderMouse();
+                    GRABBED = under;
+                }
+                if (isMove && GRABBED) {
+                    var scl = 3.0;
+                    GRABBED.position.x += mouseDelta.x * scl;
+                    GRABBED.position.y += mouseDelta.y * scl;
+                    if (GRABBED.userData.Grab) {
+                        var grabInfo = GRABBED.userData.Grab;
+                        if (grabInfo.type == "light") {
+                            TensorMath.copyVector3Into(
+                                game.State.Fast.LightPos,
+                                GRABBED.position );
+                            game.State.DoFastChangedLocally();
+                        }
+                    }
+                }
+                if (isMove && !GRABBED) {
                     var lerpFactor = 0.03;
                     camera_rotate_around = customLerp( camera_rotate_around, mouse.x * 60.0, lerpFactor );
                     camera_rotate_up = customLerp( camera_rotate_up, mouse.y * 60.0, lerpFactor );
+                }
+                if (!isMove && !isDown) {
+                    GRABBED = null;
                 }
 
                 mousePrevious.copy( mouse );
@@ -427,6 +457,11 @@
 			function onDocumentMouseMove( event ) {
                 event.preventDefault();
                 onInnerMouseEvent( event, false, true );
+            }
+            
+            function onDocumentMouseDown( event ) {
+                //event.preventDefault();
+                onInnerMouseEvent( event, true, false );
 			}
 
 			//
@@ -463,12 +498,32 @@
 
                 for (var ii in intersects) {
                     var info = intersects[ii].object;
-                    if (info.userData && info.userData.Node) {
+                    if (info.userData && info.userData.Grab) {
                         return info;
                     }
                 }
 
                 return undefined;
+            }
+
+            function updateUnderMouse() {
+
+                const next = findBestUnderMouse();
+                if ( INTERSECTED != next && !GRABBED ) {
+
+                    INTERSECTED = next;
+
+                    if (INTERSECTED) {
+                        var index = INTERSECTED.userData.Grab;
+                        console.log("Hovering " + index.type + " " + index.index);
+                        game.OnHoveredOver( index );
+                    } else {
+                        game.OnHoveredOver( -1 );
+                    }
+
+                }
+
+                return INTERSECTED;
             }
 
 			function render() {
@@ -486,22 +541,8 @@
                 light.updateMatrix();
                 light.updateMatrixWorld();
 
-				// find intersections
-
-                const next = findBestUnderMouse();
-                if ( INTERSECTED != next ) {
-
-                    INTERSECTED = next;
-
-                    if (INTERSECTED) {
-                        var index = INTERSECTED.userData.Node.Index;
-                        game.OnHoveredOver( index );
-                    } else {
-                        game.OnHoveredOver( -1 );
-                    }
-
-                }
-
+                // find intersections
+                updateUnderMouse();
 
 				renderer.render( scene, camera );
 

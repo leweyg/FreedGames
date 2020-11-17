@@ -35,6 +35,7 @@ var ShuzzleThreeJS_Prototype = {
         }
 
         if (this.GameLightSpot) {
+            this.GameLightHandle.position.copy( this.Game.State.Fast.LightPos );
             this.GameLightSpot.position.copy( this.GameLightHandle.position );
 
             var bounds = this.Game.Board.Board.Bounds;
@@ -224,6 +225,7 @@ var ShuzzleThreeJS_Prototype = {
             var blockDecl = nodeInfo[ni];
             var state = this.Game.State.Core.Blocks[ni];
             var blockObj = this.BuildBlock( blockDecl, state );
+            blockObj.userData.Grab = { type: "block", index:ni  };
 
             this.GameBlocks.push( blockObj );
             this.SceneRoot.add( blockObj );
@@ -237,18 +239,19 @@ var ShuzzleThreeJS_Prototype = {
         this.GameLightHandle = new THREE.Mesh( sphereGeo, lightMat );
         this.GameLightHandle.position.copy( this.Game.Board.Board.Bounds.max );
         this.GameLightHandle.scale.set(0.3,0.3,0.3);
+        this.GameLightHandle.userData.Grab = { type: "light" };
         this.SceneRoot.add( this.GameLightHandle );
         if (true) {
             spotLight = new THREE.SpotLight( 0x808080 );
             spotLight.name = 'Spot Light';
-            spotLight.angle = Math.PI / 5;
+            spotLight.angle = Math.PI / 3;
             spotLight.penumbra = 0.2;
             spotLight.position.set( 10, 10, 5 );
             spotLight.castShadow = true;
             spotLight.shadow.camera.near = 1.5;
             spotLight.shadow.camera.far = 300;
-            //spotLight.shadow.mapSize.width = 256;
-            //spotLight.shadow.mapSize.height = 256;
+            spotLight.shadow.mapSize.width = 512;
+            spotLight.shadow.mapSize.height = 512;
             spotLight.shadow.focus = 1;
             this.GameLightSpot = spotLight;
             this.SceneRoot.add( spotLight );
