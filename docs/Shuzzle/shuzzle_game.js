@@ -35,15 +35,19 @@ var ShuzzleThreeJS_Prototype = {
         }
 
         if (this.GameLightSpot) {
-            this.GameLightHandle.position.copy( this.Game.State.Fast.LightPos );
-            this.GameLightSpot.position.copy( this.GameLightHandle.position );
 
             var bounds = this.Game.Board.Board.Bounds;
             this.GameLightSpot.target.position.set(
                 ( bounds.min.x + bounds.max.x ) / 2,
                 ( bounds.min.y + bounds.max.y ) / 2,
-                ( bounds.min.z ),
+                ( bounds.min.z - 5 ),
                 );
+
+            this.GameLightHandle.position.copy( this.Game.State.Fast.LightPos );
+            this.GameLightSpot.position.copy( this.Game.State.Fast.LightPos );
+
+            this.GameLightSpot.updateMatrix();
+            this.GameLightSpot.updateMatrixWorld();
             
         }
 
@@ -198,8 +202,13 @@ var ShuzzleThreeJS_Prototype = {
         //scene.quaternion.setFromAxisAngle(new THREE.Vector3(0,0,1),-90);
         this.SceneRoot = scene;
 
+        const bounds = this.Game.Board.Board.Bounds;
         const board_scale = 10;
         this.SceneRoot.scale.set(board_scale,board_scale,board_scale);
+        this.SceneRoot.position.set(
+            (bounds.min.x + bounds.max.x) * -0.5 * board_scale,
+            (bounds.min.y + bounds.max.y) * -0.5 * board_scale,
+            -bounds.max.z * board_scale);
 
         this.SceneParent.add( scene );
         
@@ -247,6 +256,7 @@ var ShuzzleThreeJS_Prototype = {
             spotLight.angle = Math.PI / 3;
             spotLight.penumbra = 0.2;
             spotLight.position.set( 10, 10, 5 );
+            //spotLight.target = this.SceneRoot;
             spotLight.castShadow = true;
             spotLight.shadow.camera.near = 1.5;
             spotLight.shadow.camera.far = 300;
@@ -255,6 +265,7 @@ var ShuzzleThreeJS_Prototype = {
             spotLight.shadow.focus = 1;
             this.GameLightSpot = spotLight;
             this.SceneRoot.add( spotLight );
+            this.SceneRoot.add( spotLight.target );
         }
 
         if (true) {
