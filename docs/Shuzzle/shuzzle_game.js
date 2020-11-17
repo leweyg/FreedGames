@@ -107,6 +107,7 @@ var ShuzzleThreeJS_Prototype = {
     Cursors : [],
     GameBlocks : [],
     GameGoal : null,
+    GameLightHandle : null,
     MatsByType : {},
     RedrawCallback : null,
     DefaultScale : new THREE.Vector3(1,1,0.3),
@@ -241,11 +242,11 @@ var ShuzzleThreeJS_Prototype = {
             triGeo.computeBoundingSphere();
 
             var defaultColors = [
-                0xFF7777,
-                0x77FF77,
-                //0x7777FF,
-                0xFFff77,
-                0xFF77FF,
+                0xFF7777, // red
+                0x77FF77, // green
+                0x7777FF, // blue
+                //0xFFff77, // yellow
+                0xFF77FF, // purple
             ];
             var color = defaultColors[ block.Index % defaultColors.length ];
 
@@ -281,9 +282,10 @@ var ShuzzleThreeJS_Prototype = {
         this.MatsByType[ 0] = new THREE.MeshLambertMaterial( { color: 0xffFFff } );
         this.MatsByType[ 1] = new THREE.MeshLambertMaterial( { color: 0x656565 } );
 
-        const piece_scale = 26;// * this.Game.Board.NodeScale;
+        const piece_scale = 1.0;// * this.Game.Board.NodeScale;
 
-        const geometry = new THREE.SphereBufferGeometry( piece_scale, 12, 12 );
+        const sphereGeo = new THREE.SphereBufferGeometry( piece_scale, 12, 12 );
+
         
         
         var lookTo = new THREE.Vector3();
@@ -304,11 +306,16 @@ var ShuzzleThreeJS_Prototype = {
 
         this.SceneRoot.add( this.BuildBackground( this.Game.Board.Board.Bounds ) );
 
+        var lightMat = new THREE.MeshLambertMaterial( { color: 0xFFff77 } );
+        this.GameLightHandle = new THREE.Mesh( sphereGeo, lightMat );
+        this.GameLightHandle.position.copy( this.Game.Board.Board.Bounds.max );
+        this.GameLightHandle.scale.set(0.3,0.3,0.3);
+        this.SceneRoot.add( this.GameLightHandle );
 
         if (true) {
             this.Cursors = [ null ];
             for (var ti=0; ti<1; ti++) {
-                const cursorObj = new THREE.Mesh( geometry, this.MatsByType[ti] );
+                const cursorObj = new THREE.Mesh( sphereGeo, this.MatsByType[ti] );
                 cursorObj.scale.set( 0.5, 0.5, 0.5 );
                 this.SceneRoot.add( cursorObj );
                 this.Cursors[ti] = cursorObj;
