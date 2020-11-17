@@ -327,7 +327,7 @@ var ShuzzleThreeJS_Prototype = {
 
         this.SceneRoot.add( this.BuildBackground( this.Game.Board.Board.Bounds ) );
 
-        var lightMat = new THREE.MeshLambertMaterial( { color: 0xFFff77 } );
+        var lightMat = new THREE.MeshBasicMaterial( { color: 0xFFff11 } );
         this.GameLightHandle = new THREE.Mesh( sphereGeo, lightMat );
         this.GameLightHandle.position.copy( this.Game.Board.Board.Bounds.max );
         this.GameLightHandle.scale.set(0.3,0.3,0.3);
@@ -335,14 +335,15 @@ var ShuzzleThreeJS_Prototype = {
         if (true) {
             spotLight = new THREE.SpotLight( 0x808080 );
             spotLight.name = 'Spot Light';
-            spotLight.angle = Math.PI / 8;
+            spotLight.angle = Math.PI / 5;
             spotLight.penumbra = 0.2;
             spotLight.position.set( 10, 10, 5 );
             spotLight.castShadow = true;
             spotLight.shadow.camera.near = 1.5;
-            spotLight.shadow.camera.far = 20;
-            spotLight.shadow.mapSize.width = 1024;
-            spotLight.shadow.mapSize.height = 1024;
+            spotLight.shadow.camera.far = 200;
+            //spotLight.shadow.mapSize.width = 256;
+            //spotLight.shadow.mapSize.height = 256;
+            spotLight.shadow.focus = 1;
             this.GameLightSpot = spotLight;
             this.SceneRoot.add( spotLight );
         }
