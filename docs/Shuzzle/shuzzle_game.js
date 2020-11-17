@@ -43,7 +43,12 @@ var ShuzzlePrototype_State = {
         this.Core.Blocks.length = numNodes;
         this.Fast.Hovers = [ -1, -1 ];
         for (var i=0; i<numNodes; i++) {
-            this.Core.Blocks[i] = { something:true };
+            this.Core.Blocks[i] = { 
+                Center : {x:0, y:0, z:0},
+                Rotation : {
+                    x:{x:1}, y:{y:1}, z:{z:1}
+                }
+            };
         }
     },
 
@@ -100,6 +105,8 @@ var ShuzzleThreeJS_Prototype = {
     SceneParent : null,
     Stones : [],
     Cursors : [],
+    GameBlocks : [],
+    GameGoal : null,
     MatsByType : {},
     RedrawCallback : null,
     DefaultScale : new THREE.Vector3(1,1,0.3),
@@ -113,22 +120,10 @@ var ShuzzleThreeJS_Prototype = {
 
         if (!this.SceneRoot) return;
 
-        for (var ni=0; ni<this.Stones.length; ni++) {
-            var state = this.Game.State.Core.Nodes[ni];
-            var from = this.Stones[ni];
-            var mat = this.MatsByType[ state ];
-            var scl = this.Temp1;
-            if (from.material != mat) {
-                from.material = mat;
-            }
-            scl.copy( this.DefaultScale );
-            if (state < 0) {
-                scl.multiplyScalar( 0.61 );
-                scl.z = this.DefaultScale.z;
-            }
-            if (from.scale.x != scl.x) {
-                from.scale.copy( scl );
-            }
+        for (var bi=0; bi<this.GameBlocks.length; bi++) {
+            var blockObj = this.GameBlocks[bi];
+            var state = this.Game.State.Core.Blocks[bi];
+            blockObj.position.copy( state.Center );
         }
 
         for (var ti=0; ti<1; ti++) {
@@ -148,10 +143,13 @@ var ShuzzleThreeJS_Prototype = {
         }
     },
 
-    BuildBlock : function( block ) {
+    BuildBlock : function( block, state ) {
         
         var center = new THREE.Vector3( 0, 0, 0 );
         center.copy( block.Center );
+        if (state) {
+            state.Center = center.clone();
+        }
 
         var vpp = block.Mesh.VerticesPerPolygon;
         if (vpp == 2) {
@@ -244,12 +242,17 @@ var ShuzzleThreeJS_Prototype = {
         var referenceUp = new THREE.Vector3(0,0,1);
 
         var nodeInfo = this.Game.Board.Board.Blocks;
+        this.GameBlocks = [];
         for (var ni=0; ni<nodeInfo.length; ni++) {
-            var block = nodeInfo[ni];
+            var blockDecl = nodeInfo[ni];
+            var state = this.Game.State.Core.Blocks[ni];
+            var blockObj = this.BuildBlock( blockDecl, state );
 
-            this.SceneRoot.add( this.BuildBlock( block ) );
+            this.GameBlocks.push( blockObj );
+            this.SceneRoot.add( blockObj );
         }
-        this.SceneRoot.add( this.BuildBlock( this.Game.Board.Board.Goal ) );
+        this.GameGoal = this.BuildBlock( this.Game.Board.Board.Goal );
+        this.SceneRoot.add( this.GameGoal );
 
 
         if (true) {
