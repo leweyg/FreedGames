@@ -170,60 +170,34 @@ var ShuzzleThreeJS_Prototype = {
             const lineObj = new THREE.LineSegments( lineGeo, lineMat );
             return lineObj;
         } else {
-            var linePoints = [];
             var trianglePoints = [];
+            var triNormals = [];
+            var pushVertex = ((vert) => {
+                trianglePoints.push( vert.pos.x );
+                trianglePoints.push( vert.pos.y );
+                trianglePoints.push( vert.pos.z );
+                triNormals.push( vert.normal.x );
+                triNormals.push( vert.normal.y );
+                triNormals.push( vert.normal.z );
+            });
             var numPolys = block.Mesh.Vertices.length / block.Mesh.VerticesPerPolygon;
             for (var pi=0; pi<numPolys; pi++) {
                 for (var ti=1; ti<vpp; ti++) {
 
                     {
                         var si = (pi*vpp); // zero 
-                        var pos = block.Mesh.Vertices[si].pos;
-                        var loc = new THREE.Vector3( pos.x, pos.y, pos.z );
-                        loc.add(center);
-                        trianglePoints.push( loc );
+                        pushVertex( block.Mesh.Vertices[si] );
                     }
 
                     for (var fi=0; fi<2; fi++) {
-                        //for (var vi=0; vi<block.Mesh.Vertices.length; vi++) {
-                        {
-                            var si = (pi*vpp) + ((ti+fi+0)%vpp); 
-                            var pos = block.Mesh.Vertices[si].pos;
-                            var loc = new THREE.Vector3( pos.x, pos.y, pos.z );
-                            loc.add(center);
-                            trianglePoints.push( loc );
-                        }
-                    }
-
-                    for (var vi=0; vi<block.Mesh.Vertices.length; vi++) {
-                        {
-                        var si = (pi*vpp) + ((vi+0)%vpp); 
-                        var pos = block.Mesh.Vertices[si].pos;
-                        var loc = new THREE.Vector3( pos.x, pos.y, pos.z );
-                        loc.add(center);
-                        linePoints.push( loc );
-                        }
-
-                        {
-                        var si = (pi*vpp) + ((vi+1)%vpp);
-                        var pos = block.Mesh.Vertices[si].pos;
-                        var loc = new THREE.Vector3( pos.x, pos.y, pos.z );
-                        loc.add(center);
-                        linePoints.push( loc );
-                        }
+                        var si = (pi*vpp) + ((ti+fi+0)%vpp); 
+                        pushVertex( block.Mesh.Vertices[si] );
                     }
                 }
             }
 
-            var triArray = [];
-            for (var ti=0; ti<trianglePoints.length; ti++) {
-                var i = ti;
-                triArray.push( trianglePoints[i].x );
-                triArray.push( trianglePoints[i].y );
-                triArray.push( trianglePoints[i].z );
-            }
             var triGeo = new THREE.BufferGeometry();
-            triGeo.setAttribute( 'position', new THREE.Float32BufferAttribute( triArray, 3 ) );
+            triGeo.setAttribute( 'position', new THREE.Float32BufferAttribute( trianglePoints, 3 ) );
             triGeo.computeBoundingSphere();
 
             const triMat = new THREE.MeshPhongMaterial( {
@@ -231,16 +205,9 @@ var ShuzzleThreeJS_Prototype = {
                 side: THREE.DoubleSide //, vertexColors: true
             } );
             var triMesh = new THREE.Mesh( triGeo, triMat );
+
+            triMesh.position.copy( center );
             return triMesh;
-
-
-            const lineMat = new THREE.LineBasicMaterial({
-                color: 0x000000,
-                //linewidth: 3,
-            });
-            const lineGeo = new THREE.BufferGeometry().setFromPoints( linePoints );
-            const lineObj = new THREE.LineSegments( lineGeo, lineMat );
-            return lineObj;
         } 
     },
 
