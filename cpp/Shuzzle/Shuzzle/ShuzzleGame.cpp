@@ -3,6 +3,8 @@
 //The Shuzzle Game Core
 //
 
+#include <fstream>
+
 uint SolidRenderContext;
 uint WireRenderContext;
 
@@ -29,6 +31,32 @@ ipnt IPntTimesFloatMatrix4(ipnt vec, float * mat)
 	return to;
 }
 
+void ExportPnt(std::ofstream& fout, ipnt pos) {
+    fout << "{";
+    fout << "\"x\":" << pos.x;
+    fout << ",\"y\":" << pos.y;
+    fout << ",\"z\":" << pos.z;
+    fout << "}";
+}
+
+void ExportPnt(std::ofstream& fout, fpnt pos) {
+    fout << "{";
+    fout << "\"x\":" << pos.x;
+    fout << ",\"y\":" << pos.y;
+    fout << ",\"z\":" << pos.z;
+    fout << "}";
+}
+
+void ExportVertex(std::ofstream& fout, VertType* pVertex, bool hasNormals) {
+    fout << "{";
+    fout << "\"pos\":"; ExportPnt(fout, pVertex->mVertex);
+    if (hasNormals) {
+        fout << ",\"normal\":"; ExportPnt(fout, pVertex->mNormal);
+    }
+    //fout << ",\"color\":"; ExportPnt(fout, pVertex->mColor.ToRGB());
+    fout << "}";
+}
+
 struct Rect3
 {
 	ipnt Min, Max;
@@ -41,6 +69,11 @@ struct Rect3
 	void Set(ipnt min, ipnt max) {Min=min; Max=max;};
 	void operator += (ipnt offset);
 	ResMesh* GenMesh();
+    
+    void Export(std::ofstream& fout) {
+        fout << "{\"min\":"; ExportPnt(fout,this->Min); fout << ", ";
+        fout << "\"max\":"; ExportPnt(fout,this->Max); fout << "}";
+    };
 };
 
 fpnt Rect3::Clip(fpnt val)
@@ -188,6 +221,46 @@ public:
 
 	Block() {mBoxes=0; mNumBoxes=0; mCenter=IPNT(0,0,0);};
 	~Block() {UnInit();};
+    
+    void Export(std::ofstream& fout, ResMesh* pMesh) {
+        fout << "{";
+        fout << "  \"Index\":" << mIndex << ", ";
+        /*
+        if (this->mNode->mColor) {
+            fout << " \"Color\":"; ExportPnt(fout, this->mNode->mColor->mValue.ToRGB()); fout << ", ";
+        }
+        */
+        fout << "  \"Center\":"; ExportPnt(fout,this->mCenter); fout << ", ";
+        fout << "  \"Bounds\":"; this->mBounds.Export(fout); fout << ", ";
+        fout << "\n  \"Boxes\":[" ;
+        for (int i=0; i<mNumBoxes; i++) {
+            if (i!=0) fout << ",";
+            ExportPnt(fout, this->mBoxes[i]);
+        }
+        fout << " ], ";
+        fout << "\n  \"Mesh\":{";
+        fout << " \"VerticesPerPolygon\":" << pMesh->Format.VPP << ", ";
+        fout << "\n   \"Vertices\":[";
+        pMesh->UpdateNormals();
+        VertType* vt = (VertType*)pMesh->VertData.Raw();
+        if (pMesh->VertData.Size != (sizeof(VertType)*pMesh->NumVerts)) {
+            printf("Size mis match!");
+        }
+        for (int i=0; i<pMesh->NumVerts; i++) {
+            if (i!=0) fout << ",";
+            ExportVertex( fout, vt+i, pMesh->Format.VPP >= 3 );
+        }
+        fout << "] }";
+        /*
+        fout << "\n  ,\"Indices\":[";
+        for (int i=0; i<pMesh->NumIndices; i++) {
+            if (i!=0) fout << ",";
+            fout << *(pMesh->Indices.Axs(i));
+        }
+        fout << "]}";
+        */
+        fout << "}";
+    }
 
 private:
 	bool CanApplyMatrix(MatrixStruct* mat);
@@ -568,6 +641,21 @@ public:
 
 	Board() {mBlocks=0; mNumBlocks=0; mBounds.Zero();};
 	~Board() {UnInit();};
+    
+    void ExportToJSON(std::ofstream& fout, ResCompNode* pArNodes, ResMesh* pGoalMesh) {
+        fout << "{\"type\":\"Board\", ";
+        fout << " \"NumBlocks\":" << mNumBlocks << ", ";
+        fout << " \"Bounds\":"; mBounds.Export(fout); fout << ", ";
+        mGoalBlock.mIndex = -1;
+        fout << "\n \"Goal\":"; mGoalBlock.Export(fout, pGoalMesh); fout << ", ";
+        fout << "\n \"Blocks\":[\n  ";
+        for (int i=0; i<mNumBlocks; i++) {
+            if (i!=0) fout << ",\n  ";
+            mBlocks[i].Export(fout, pArNodes->mChildren.Raw()[i]->mMesh );
+        }
+        fout << "]";
+        fout << "}\n";
+    };
 };
 
 void Board::FindAllBounds()
@@ -1258,6 +1346,7 @@ public:
 	bool GetIsInv();
 	void FinishedMove();
 	void GotoLevel(int num);
+    void ExportNow();
 
 	float LightHeight();
 	int BestForwardAxis(bool* positive, bool other=false);
@@ -1582,6 +1671,23 @@ void Game_ContextFlush(void* data)
 	g->mEdger->FlushShadow();
 }
 
+void Game::ExportNow() {
+    
+    std::string path = "/export_path/";
+    //path = std::filesystem::current_path();
+    path += "puzzle_";
+    path += '0' + this->mLevel;
+    path += ".shuzzle.json";
+    std::ofstream fout(path.c_str());
+    fout << "{";
+    fout << " \"ShuzzleLevel\":" << this->mLevel << ", ";
+    fout << " \"CameraBounds\":"; this->CameraBounds.Export(fout); fout << ", ";
+    fout << "\n \"Board\":"; mBoard->ExportToJSON(fout, mNodes, mGoalMesh); fout << " \n";
+    
+    fout << " }";
+    fout.close();
+}
+
 void Game::Init(ResCompNode* parent, int level, Board* board)
 {
 	UnInit();
@@ -1607,6 +1713,7 @@ void Game::Init(ResCompNode* parent, int level, Board* board)
 	}
 
 	mGoalMesh = mBoard->mGoalBlock.GenOutlineMesh();
+    
 
 //	work = ResCompNode::Create( background );
 //	Rect3 r = mBoard->mBounds;
@@ -1637,6 +1744,8 @@ void Game::Init(ResCompNode* parent, int level, Board* board)
 	CameraLookAt->mPos.y += yoff/3.0f;
 
 	SetupCamera();
+    
+    
 
 	/*
 	work = ResCompNode::Create(quads);

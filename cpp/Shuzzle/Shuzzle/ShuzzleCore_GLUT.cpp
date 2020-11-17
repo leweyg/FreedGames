@@ -101,6 +101,9 @@ void Test_Key(char let)
 	case 'i':
 		GGame->SetIsInv( !GGame->GetIsInv() );
 		break;
+    case 'x':
+        //GGame->ExportNow();
+        break;
 	case 'z':
 		{
 			int i = 0;
