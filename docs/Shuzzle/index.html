@@ -142,7 +142,7 @@
                 new_board_selector.value = "1";
                 new_board_selector.onchange = (() => {
                     var newVal = new_board_selector.value;
-                    var board = ShuzzleBoards[newVal];
+                    var board = ShuzzleBoards["puzzle_" + newVal];
                     game.ChangeBoard( board );
                 });
             }
