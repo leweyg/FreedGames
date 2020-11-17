@@ -268,13 +268,15 @@
 				scene = new THREE.Scene();
                 scene.background = new THREE.Color( 0x6caf56 );
                 
-                var ambientLight = new THREE.AmbientLight( 0xa0a0a0 ); // soft white light
+                var ambientLight = new THREE.AmbientLight( 0x808080 ); // soft white light
                 scene.add( ambientLight );
 
-				light = new THREE.DirectionalLight( 0x6f6f6f, 1 );
+                
+				light = new THREE.DirectionalLight( 0x2f2f2f, 1 );
                 light.position.set( 1, 1, 1 ).normalize();
                 light.target = scene;
                 scene.add( light );
+                
                 
                 const board_scale = 35.0;
                 const piece_scale = 0.1;
@@ -312,6 +314,8 @@
 				renderer = new THREE.WebGLRenderer();
 				renderer.setPixelRatio( window.devicePixelRatio );
                 renderer.setSize( window.innerWidth, window.innerHeight );
+                renderer.shadowMap.enabled = true;
+				renderer.shadowMap.type = THREE.BasicShadowMap;
 				container.appendChild( renderer.domElement );
 
 				//stats = new Stats();
