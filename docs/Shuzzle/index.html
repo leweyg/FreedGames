@@ -261,6 +261,7 @@
                 tempPos : new THREE.Vector3(),
                 tempPosClose : new THREE.Vector3(),
                 tempBestPos : new THREE.Vector3(),
+                tempMatrix4 : new THREE.Matrix4(),
                 cursorWorldRay : new THREE.Ray(),
                 directions : [
                     { dir:new THREE.Vector3(1,0,0) },
@@ -490,12 +491,27 @@
                     grabStartData.worldStart.copy( grabStartData.localStart );
                     grabStartData.worldStart.applyMatrix4( GRABBED.parent.matrixWorld );
                     grabStartData.worldPlane.setFromNormalAndCoplanarPoint( globalVectorZ, grabStartData.worldStart );
-                    
                     grabStartData.cursorWorldRay.copy( mouseRay );
-                    var dir = grabStartData.findBestOffsetForRay( GRABBED.userData.Grab.type != "light" );
-                    //TensorMath.clampVector3InBounds( grabStartData.localStart, game.Board.Board.Bounds );
-                    GRABBED.position.copy( grabStartData.localStart );
-                    GRABBED.position.add( dir.CurrentOffset );
+                    
+
+                    var isLight = (GRABBED.userData.Grab && GRABBED.userData.Grab.type=="light");
+
+                    if (isLight) {
+                        var distToPlane = grabStartData.cursorWorldRay.distanceToPlane( grabStartData.worldPlane );
+                        var t = grabStartData.tempPos;
+                        grabStartData.cursorWorldRay.at( distToPlane, t );
+                        grabStartData.tempMatrix4.getInverse( GRABBED.parent.matrixWorld );
+                        t.applyMatrix4( grabStartData.tempMatrix4 );
+                        t.z = grabStartData.localStart.z;
+                        GRABBED.position.copy( t );
+
+                    } else {
+                        var dir = grabStartData.findBestOffsetForRay( !isLight );
+                        //TensorMath.clampVector3InBounds( grabStartData.localStart, game.Board.Board.Bounds );
+                        GRABBED.position.copy( grabStartData.localStart );
+                        GRABBED.position.add( dir.CurrentOffset );
+                        
+                    }
                     TensorMath.clampVector3InBounds( GRABBED.position, game.Board.Board.Bounds );
 
                     //GRABBED.position.x += mouseDelta.x * scl;
