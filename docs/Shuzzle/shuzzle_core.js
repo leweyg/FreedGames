@@ -17,6 +17,11 @@ var TensorMath = {
     cloneVector3 : function(v) {
         return { x:v.x, y:v.y, z:v.z };
     },
+    vector3Add : function(a,b) {
+        a.x += b.x;
+        a.y += b.y;
+        a.z += b.z;
+    },
     copyVector3Into : function(dst, src) {
         dst.x = src.x;
         dst.y = src.y;
@@ -28,6 +33,23 @@ var TensorMath = {
             min:TensorMath.cloneVector3(b.min),
             max:TensorMath.cloneVector3(b.max),
         };
+    },
+    transCreateIdentity : function() {
+        return { 
+            Center : {x:0, y:0, z:0},
+            RotationTrans : {
+                x:{x:1}, y:{y:1}, z:{z:1}
+            }
+        };
+    },
+    transCopy : function(dst, src) {
+        TensorMath.copyVector3Into( dst.x, src.x );
+        TensorMath.copyVector3Into( dst.y, src.y );
+        TensorMath.copyVector3Into( dst.z, src.z );
+    },
+    stateCopy : function(dst,src) {
+        TensorMath.copyVector3Into( dst.Center, src.Center );
+        TensorMath.transCopy( dst.RotationTrans, src.RotationTrans );
     },
     isVector3InBounds : function(v,b) {
         var x = ((v.x >= b.min.x)&&(v.x <= b.max.x));
@@ -109,9 +131,9 @@ var ShuzzlePrototype_Voxels = {
         return ndx;
     },
 
-    DrawBlock : function(blockState, blockDef, letter) {
+    DrawBlock : function(blockState, blockDef, letter, requireAll=false) {
         var nBoxes = blockDef.Boxes.length;
-        if (letter === undefined) letter = blockDef.Letter;
+        if (letter===undefined || letter===null) letter = blockDef.Letter;
         for (var bi=0; bi<nBoxes; bi++) {
             var boxLocalPos = blockDef.Boxes[bi];
             var ndx = this.TryGetBoxVoxelIndex( blockState, boxLocalPos );
@@ -120,10 +142,19 @@ var ShuzzlePrototype_Voxels = {
                 if ((was==" ")||(letter==" ")) {
                     this.VoxelData[ndx] = letter;
                 } else {
-                    throw "Invalid voxel write over '" + was + "'";
+                    if (requireAll) {
+                        throw "Voxel already taken";
+                    }
+                    return false;
                 }
+            } else {
+                if (requireAll) {
+                    throw "Invalid index"
+                }
+                return false;
             }
         }
+        return true;
     },
 
     ClearAll : function() {
@@ -174,14 +205,18 @@ var ShuzzlePrototype_State = {
         //this.Fast.LightPos.x = this.Game.Board.Board.Bounds.min.x;
         for (var i=0; i<numNodes; i++) {
             board.Blocks[i].Letter = String.fromCharCode( board.Blocks[i].Index + "a".charCodeAt(0) );
-            this.Core.Blocks[i] = { 
-                Center : {x:0, y:0, z:0},
-                RotationTrans : {
-                    x:{x:1}, y:{y:1}, z:{z:1}
-                }
-            };
+            this.Core.Blocks[i] = TensorMath.transCreateIdentity();
             TensorMath.copyVector3Into( this.Core.Blocks[i].Center, board.Blocks[i].Center );
-            this.Voxels.DrawBlock( this.Core.Blocks[i], board.Blocks[i] );
+        }
+        this.Revoxelize();
+    },
+
+    Revoxelize : function() {
+        this.Voxels.ClearAll();
+        var board = this.Game.Board.Board;
+        var numNodes = board.Blocks.length;
+        for (var i=0; i<numNodes; i++) {
+            this.Voxels.DrawBlock( this.Core.Blocks[i], board.Blocks[i], null, true );
         }
     },
 
@@ -211,6 +246,28 @@ var ShuzzlePrototype_State = {
         this.DoCoreChangedRemote();
         // and now publish the state... (save)
         ShuzzleSaveCallbacks.DoSaveCore( this.Core );
+    },
+    _TempState : TensorMath.transCreateIdentity(),
+
+    TryMoveBlock : function(blockIndex, offset ) {
+        var blockState = this.Core.Blocks[ blockIndex ];
+        var blockDef = this.Game.Board.Board.Blocks[ blockIndex ];
+        if (!this.Voxels.DrawBlock( blockState, blockDef, ' ', true)) {
+            this.Revoxelize();
+            return false;
+        }
+        TensorMath.stateCopy( this._TempState, blockState );
+        TensorMath.copyVector3Into( this._TempState.Center, offset );
+
+        if (!this.Voxels.DrawBlock( this._TempState, blockDef ) ) {
+            this.Revoxelize();
+            return false;
+        }
+
+        TensorMath.stateCopy( blockState, this._TempState );
+        this.DoCoreChangedLocally();
+
+        return true;
     },
 
     DoClickedIndex : function(grabData) {

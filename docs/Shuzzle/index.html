@@ -298,6 +298,7 @@
                         this.tempPos.copy( bestDir.dir );
 
                         var biasAlong = bestDir.Along;
+                        biasAlong = Math.floor( biasAlong + 0.5 );
                         this.tempPos.multiplyScalar( biasAlong );
                         bestDir.CurrentOffset = this.tempPos;
                     }
@@ -507,9 +508,14 @@
 
                     } else {
                         var dir = grabStartData.findBestOffsetForRay( !isLight );
+
+                        dir.CurrentOffset.add( grabStartData.localStart );
+
+                        game.State.TryMoveBlock( GRABBED.userData.Grab.index, dir.CurrentOffset );
+
                         //TensorMath.clampVector3InBounds( grabStartData.localStart, game.Board.Board.Bounds );
-                        GRABBED.position.copy( grabStartData.localStart );
-                        GRABBED.position.add( dir.CurrentOffset );
+                        //GRABBED.position.copy( grabStartData.localStart );
+                        //GRABBED.position.add( dir.CurrentOffset );
                         
                     }
                     TensorMath.clampVector3InBounds( GRABBED.position, game.Board.Board.Bounds );
