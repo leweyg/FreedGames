@@ -199,7 +199,7 @@ var ShuzzleThreeJS_Prototype = {
                 0xFF7777, // red
                 0x7777FF, // blue
                 0xFFff77, // yellow
-                0x77FF77, // green
+                0x22FF22, // green
                 
                 //0xFFff77, // yellow
                 0xFF77FF, // purple
