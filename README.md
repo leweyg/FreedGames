@@ -6,17 +6,15 @@ Games freed of their traditional dimensionality.
 
 https://leweyg.github.io/FreedGames/FreedGo/
 
-Traditional <a href="https://en.wikipedia.org/wiki/Go_(game)">Game of Go</a> adapted to numerous 3 dimensional terrains such as a mobius strip and torus. Includes realtime cloud-based multiplayer and save games.
+Traditional <a href="https://en.wikipedia.org/wiki/Go_(game)">Game of Go</a> adapted to numerous 3 dimensional terrains such as a mobius strip and torus. Includes realtime cloud-based multiplayer and save games. Source code for [v2 on web](docs/FreedGo/) or [v1 in C++](cpp/Shuzzle/Shuzzle/GoCore_GLUT.cpp).
 
 <a href="https://leweyg.github.io/FreedGames/FreedGo/">![Freed Go](docs/FreedGo/freed_go.jpg)</a>
 
 ## Shuzzle: 
 
-NOTE: Not finished...
-
 https://leweyg.github.io/FreedGames/Shuzzle/
 
-
+IN PROGRESS: A 3D block-building puzzle... where the blocks are invisible. You must use your mind, and a movable spotlight to move and rotate the blocks into place without being able to see them. Source code for [v2 on web](docs/Shuzzle/) or [v1 in C++](cpp/Shuzzle/Shuzzle/ShuzzleCore_GLUT.cpp).
 
 <a href="https://leweyg.github.io/FreedGames/Shuzzle/">![Shuzzle](docs/Shuzzle/shuzzle.jpg)</a>
 
