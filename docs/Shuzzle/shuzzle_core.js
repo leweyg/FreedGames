@@ -43,7 +43,7 @@ var TensorMath = {
 
         t.copy( b.max );
         s = Math.min( s, TensorMath.vector3MaxAxisDistanceXY(t, v) );
-        
+
         return s;
     },
 };
@@ -121,7 +121,7 @@ var ShuzzlePrototype_State = {
 
     DoClickedIndex : function(grabData) {
         var index = grabData.index;
-        console.log("clicked " + grabData.type + " " + index);
+        //console.log("clicked " + grabData.type + " " + index);
         if (index==undefined) return;
         if ((index < 0) || (index >= this.Core.Blocks.length)) {
             return false;
