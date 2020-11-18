@@ -18085,7 +18085,8 @@
 		}
 
 		function renderObject(object, scene, camera, geometry, material, group) {
-			object.onBeforeRender(_this, scene, camera, geometry, material, group);
+			var test = object.onBeforeRender(_this, scene, camera, geometry, material, group);
+			if (test===false) return;
 			currentRenderState = renderStates.get(scene, _currentArrayCamera || camera);
 			object.modelViewMatrix.multiplyMatrices(camera.matrixWorldInverse, object.matrixWorld);
 			object.normalMatrix.getNormalMatrix(object.modelViewMatrix);

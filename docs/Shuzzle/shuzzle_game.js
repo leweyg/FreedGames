@@ -155,13 +155,13 @@ var ShuzzleThreeJS_Prototype = {
                 linePoints.push( loc );
             }
             const lineMat = new THREE.LineBasicMaterial({
-                color: 0x000000,
-                //linewidth: 3,
+                color: 0xffFFff,
+                linewidth: 3,
             });
             const lineGeo = new THREE.BufferGeometry().setFromPoints( linePoints );
             const lineObj = new THREE.LineSegments( lineGeo, lineMat );
             lineObj.castShadow = false;
-            lineObj.receiveShadow = false;
+            lineObj.receiveShadow = true;
             return lineObj;
         } else {
             var trianglePoints = [];
@@ -196,8 +196,8 @@ var ShuzzleThreeJS_Prototype = {
             triGeo.computeBoundingSphere();
 
             var defaultColors = [
-                0xFF7777, // red
                 0x7777FF, // blue
+                0xFF7777, // red
                 0xFFff77, // yellow
                 0x22FF22, // green
                 
@@ -215,6 +215,13 @@ var ShuzzleThreeJS_Prototype = {
             triMesh.receiveShadow = true;
 
             triMesh.position.copy( center );
+
+            triMesh.onBeforeRender = function( renderer, scene, camera, geometry, material, group ) {
+
+                // leweyg: NOTE: custom modified THREE.JS to support early out here:
+                if (block.Index%2 == 1) return false;
+        
+            };
             return triMesh;
         } 
     },
