@@ -6,7 +6,7 @@ Games freed of their traditional dimensionality.
 
 https://leweyg.github.io/FreedGames/FreedGo/
 
-Traditional <a href="https://en.wikipedia.org/wiki/Go_(game)">Game of Go</a> adapted to numerous 3 dimensional terrains such as a mobius strip and torus. Includes realtime cloud-based multiplayer and save games. Source code for [v2 on web](docs/FreedGo/) or [v1 in C++](cpp/Shuzzle/Shuzzle/GoCore_GLUT.cpp).
+Traditional <a href="https://en.wikipedia.org/wiki/Go_(game)">Game of Go</a> adapted to numerous 3 dimensional terrains such as a mobius strip and torus. Supports **realtime save/sharable/multiplayer games**. Source code for [v2 on web](docs/FreedGo/) or [v1 in C++](cpp/Shuzzle/Shuzzle/GoCore_GLUT.cpp).
 
 <a href="https://leweyg.github.io/FreedGames/FreedGo/">![Freed Go](docs/FreedGo/freed_go.jpg)</a>
 
