@@ -425,7 +425,7 @@
                 mouseDelta.copy( mouse );
                 mouseDelta.sub( mousePrevious );
 
-                if (isDown) {
+                if (isDown && !isMove) {
                     var under = updateUnderMouse();
                     GRABBED = under;
                 }
