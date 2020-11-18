@@ -137,15 +137,15 @@
                 for (var i in boards){
                     var name = boards[i].ShuzzleLevel;
                     var opt = document.createElement('option');
-                    opt.value = name;
+                    opt.value = "puzzle_" + name;
                     opt.innerHTML = "level " + name;
                     new_board_selector.appendChild(opt);
                     
                 }
-                new_board_selector.value = "1";
+                new_board_selector.value = "puzzle_1";
                 new_board_selector.onchange = (() => {
                     var newVal = new_board_selector.value;
-                    var board = ShuzzleBoards["puzzle_" + newVal];
+                    var board = ShuzzleBoards[newVal];
                     game.ChangeBoard( board );
                 });
             }

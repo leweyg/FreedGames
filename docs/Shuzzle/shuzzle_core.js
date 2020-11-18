@@ -23,9 +23,9 @@ var TensorMath = {
         a.z += b.z;
     },
     copyVector3Into : function(dst, src) {
-        dst.x = src.x;
-        dst.y = src.y;
-        dst.z = src.z;
+        dst.x = numOr0(src.x);
+        dst.y = numOr0(src.y);
+        dst.z = numOr0(src.z);
         return dst;
     },
     cloneBounds : function(b) {

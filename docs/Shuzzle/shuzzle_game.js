@@ -329,6 +329,9 @@ var ShuzzlePrototype_Game = {
 
     CheckBoardName : function(name) {
         if (this.Board.Name == name) return;
+        if (!(name in ShuzzleBoards)) {
+            name = "puzzle_" + name;
+        }
         var to = ShuzzleBoards[name];
         if (!to) {
             console.log("Unknown board '" + name + "'");
