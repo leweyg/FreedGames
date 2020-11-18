@@ -71,6 +71,7 @@ var ShuzzleThreeJS_Prototype = {
     BuildBackground : function( bounds ) {
         var trianglePoints = [];
         var triNormals = [];
+        var indices = [];
         var pushVertex = ((vert) => {
             trianglePoints.push( vert.x );
             trianglePoints.push( vert.y );
@@ -84,25 +85,49 @@ var ShuzzleThreeJS_Prototype = {
         var setAnd = ((ox,oy,oz)=>{
             t.x = ox; t.y = oy; t.z = oz; return t;
         });
-        var dz = bounds.min.z - 0.5;
-        for (var dx=bounds.min.x; dx<bounds.max.x; dx++) {
-            for (var dy=bounds.min.y; dy<bounds.max.y; dy++) {
-                pushVertex( setAnd( dx, dy, dz) );
-                pushVertex( setAnd( dx+1, dy, dz) );
-                pushVertex( setAnd( dx+1, dy+1, dz) );
+        bounds = TensorMath.cloneBounds( bounds );
+        var edgeSize = 4;
+        bounds.min.x -= edgeSize;
+        bounds.min.y -= edgeSize;
+        bounds.max.x += edgeSize;
+        bounds.max.y += edgeSize;
+        var base_z = bounds.min.z - 0.5;
+        var w = (bounds.max.x - bounds.min.x);
+        for (var dy=bounds.min.y; dy<bounds.max.y; dy++) {
+            for (var dx=bounds.min.x; dx<bounds.max.x; dx++) {
+                var dz = base_z;
+                var v = setAnd( dx, dy, dz);
+                var edgeDist = TensorMath.boundsMaxAxisDistanceXY( bounds, v );
+                if (edgeDist < edgeSize) {
+                    var noiseScale = 0.5;
+                    dz -= ((edgeDist - edgeSize)*1) + (noiseScale * Math.cos(dx*8 + dy*16));
+                    v.z = dz;
+                }
+                pushVertex( v );
 
-                pushVertex( setAnd( dx+1, dy+1, dz) );
-                pushVertex( setAnd( dx, dy+1, dz) );
-                pushVertex( setAnd( dx, dy, dz) );
+                if ((dx+1 < bounds.max.x) && (dy+1 < bounds.max.y)) {
+                    var ix = dx - bounds.min.x;
+                    var iy = dy - bounds.min.y;
+                    indices.push( (ix+0) + ((iy+0)*w) );
+                    indices.push( (ix+1) + ((iy+0)*w) );
+                    indices.push( (ix+1) + ((iy+1)*w) );
+
+                    indices.push( (ix+1) + ((iy+1)*w) );
+                    indices.push( (ix+0) + ((iy+1)*w) );
+                    indices.push( (ix+0) + ((iy+0)*w) );
+                }
             }
         }
 
         var triGeo = new THREE.BufferGeometry();
+        triGeo.setIndex( indices );
         triGeo.setAttribute( 'position', new THREE.Float32BufferAttribute( trianglePoints, 3 ) );
         triGeo.setAttribute( 'normal', new THREE.Float32BufferAttribute( triNormals, 3 ) );
+        triGeo.computeVertexNormals();
         triGeo.computeBoundingSphere();
+        
 
-        var flatMat = new THREE.MeshPhongMaterial( { color: 0x7777FF } );
+        var flatMat = new THREE.MeshPhongMaterial( { color: 0x77FF77 } );
         var triMesh = new THREE.Mesh( triGeo, flatMat );
 
         triMesh.castShadow = false;
@@ -172,14 +197,18 @@ var ShuzzleThreeJS_Prototype = {
 
             var defaultColors = [
                 0xFF7777, // red
-                0x77FF77, // green
                 0x7777FF, // blue
+                0xFFff77, // yellow
+                0x77FF77, // green
+                
                 //0xFFff77, // yellow
                 0xFF77FF, // purple
             ];
             var color = defaultColors[ block.Index % defaultColors.length ];
 
-            var flatMat = new THREE.MeshPhongMaterial( { color: color } );
+            var flatMat = new THREE.MeshPhongMaterial( { 
+                color: color,
+                shadowSide : THREE.FrontSide } );
             var triMesh = new THREE.Mesh( triGeo, flatMat );
 
             triMesh.castShadow = true;

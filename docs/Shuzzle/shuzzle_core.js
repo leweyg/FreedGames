@@ -17,7 +17,35 @@ var TensorMath = {
         dst.y = src.y;
         dst.z = src.z;
         return dst;
-    }
+    },
+    cloneBounds : function(b) {
+        return {
+            min:TensorMath.cloneVector3(b.min),
+            max:TensorMath.cloneVector3(b.max),
+        };
+    },
+    vector3MaxAxisDistanceXY : function(a,b) {
+        return Math.min( Math.abs(a.x-b.x), Math.abs(a.y-b.y));
+    },
+    _tempVector3 : new THREE.Vector3(),
+    boundsMaxAxisDistanceXY : function(b,v) {
+        var t = TensorMath._tempVector3;
+        t.copy( b.min );
+        var s = TensorMath.vector3MaxAxisDistanceXY( t, v );
+
+        t.copy( b.min );
+        t.y = b.max.y;
+        s = Math.min( s, TensorMath.vector3MaxAxisDistanceXY(t, v) );
+
+        t.copy( b.min );
+        t.x = b.max.x;
+        s = Math.min( s, TensorMath.vector3MaxAxisDistanceXY(t, v) );
+
+        t.copy( b.max );
+        s = Math.min( s, TensorMath.vector3MaxAxisDistanceXY(t, v) );
+        
+        return s;
+    },
 };
 
 var ShuzzlePrototype_State = {
@@ -49,7 +77,9 @@ var ShuzzlePrototype_State = {
         this.Core.Blocks = []; 
         this.Core.Blocks.length = numNodes;
         this.Fast.Hovers = [ -1, -1 ];
-        this.Fast.LightPos = TensorMath.cloneVector3( this.Game.Board.Board.Bounds.max );
+        var bounds = this.Game.Board.Board.Bounds;
+        this.Fast.LightPos = TensorMath.cloneVector3( bounds.max );
+        this.Fast.LightPos.x = ( bounds.min.x + bounds.max.x ) * 0.5;
         //this.Fast.LightPos.x = this.Game.Board.Board.Bounds.min.x;
         for (var i=0; i<numNodes; i++) {
             this.Core.Blocks[i] = { 
