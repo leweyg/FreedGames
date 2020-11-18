@@ -185,7 +185,7 @@ var ShuzzlePrototype_State = {
     },
 
     PreCoreSave : function() {
-        this.Core.BoardName = this.Game.Board.Name;
+        this.Core.BoardName = this.Game.Board.ShuzzleLevel;
     },
 
     NewBoard : function() {
