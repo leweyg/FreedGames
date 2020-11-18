@@ -294,8 +294,8 @@ var ShuzzleThreeJS_Prototype = {
             spotLight.position.set( 10, 10, 5 );
             //spotLight.target = this.SceneRoot;
             spotLight.castShadow = true;
-            spotLight.shadow.camera.near = 1.5;
-            spotLight.shadow.camera.far = 300;
+            spotLight.shadow.camera.near = 0.5;
+            spotLight.shadow.camera.far = 20;
             spotLight.shadow.mapSize.width = 512;
             spotLight.shadow.mapSize.height = 512;
             spotLight.shadow.focus = 1;
