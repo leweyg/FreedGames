@@ -239,7 +239,7 @@ var ShuzzleThreeJS_Prototype = {
         this.SceneRoot = scene;
 
         const bounds = this.Game.Board.Board.Bounds;
-        const board_scale = 10;
+        const board_scale = 1;
         this.SceneRoot.scale.set(board_scale,board_scale,board_scale);
         this.SceneRoot.position.set(
             (bounds.min.x + bounds.max.x) * -0.5 * board_scale,

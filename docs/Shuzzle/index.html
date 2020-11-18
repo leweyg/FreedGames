@@ -253,10 +253,60 @@
             let camera_rotate_around = 0;
             let camera_rotate_up = 0;
 
+            const grabStartData = {
+                localStart : new THREE.Vector3(),
+                worldStart : new THREE.Vector3(),
+                worldPlane : new THREE.Plane(),
+                tempRay : new THREE.Ray(),
+                tempPos : new THREE.Vector3(),
+                tempPosClose : new THREE.Vector3(),
+                tempBestPos : new THREE.Vector3(),
+                cursorWorldRay : new THREE.Ray(),
+                directions : [
+                    { dir:new THREE.Vector3(1,0,0) },
+                    { dir:new THREE.Vector3(-1,0,0) },
+                    { dir:new THREE.Vector3(0,1,0) },
+                    { dir:new THREE.Vector3(0,-1,0) },
+                    { dir:new THREE.Vector3(0,0,1) },
+                    { dir:new THREE.Vector3(0,0,-1) }, ],
+                findBestOffsetForRay : function(allowZ=true) {
+                    var bestScore = 10000;
+                    var bestDir = null;
+                    var bestAlong = bestScore;
+                    var nDirections = this.directions.length;
+                    if (!allowZ) {
+                        nDirections = 4;
+                    }
+                    for (var di=0; di<nDirections; di++) {
+                        var dir = this.directions[di];
+                        this.tempPos.copy( dir.dir );
+                        this.tempPos.multiplyScalar( 10 );
+                        this.tempPos.add( this.worldStart );
+                        var dist = this.cursorWorldRay.distanceSqToSegment(
+                            this.worldStart, this.tempPos,
+                            null, this.tempPosClose
+                        );
+                        if (dist < bestScore) {
+                            bestScore = dist;
+                            bestDir = dir;
+                            this.tempPosClose.sub( this.worldStart );
+                            dir.Along = this.tempPosClose.dot( dir.dir );
+                        }
+                    }
+                    if (bestDir) {
+                        this.tempPos.copy( bestDir.dir );
+
+                        var biasAlong = bestDir.Along;
+                        this.tempPos.multiplyScalar( biasAlong );
+                        bestDir.CurrentOffset = this.tempPos;
+                    }
+                    return bestDir;
+                },
+            };
             const mouse = new THREE.Vector2();
             const mousePrevious = new THREE.Vector2();
             const mouseDelta = new THREE.Vector2();
-			const radius = 100;
+			const radius = 10;
 
 			init();
             animate();
@@ -417,6 +467,8 @@
                 return ((a*(1-t)) + (b*t));
             }
 
+            const globalVectorZ = new THREE.Vector3(0,0,1);
+
             function onInnerMouseEvent( event, isDown, isMove ) {
             
                 mousePrevious.copy( mouse );
@@ -428,11 +480,27 @@
                 if (isDown && !isMove) {
                     var under = updateUnderMouse();
                     GRABBED = under;
+                    if (GRABBED) {
+                        grabStartData.localStart.copy( GRABBED.position );
+                    }
                 }
                 if (isMove && GRABBED) {
                     var scl = 3.0;
-                    GRABBED.position.x += mouseDelta.x * scl;
-                    GRABBED.position.y += mouseDelta.y * scl;
+                    var mouseRay = updateMouseRay();
+                    grabStartData.worldStart.copy( grabStartData.localStart );
+                    grabStartData.worldStart.applyMatrix4( GRABBED.parent.matrixWorld );
+                    grabStartData.worldPlane.setFromNormalAndCoplanarPoint( globalVectorZ, grabStartData.worldStart );
+                    
+                    grabStartData.cursorWorldRay.copy( mouseRay );
+                    var dir = grabStartData.findBestOffsetForRay( GRABBED.userData.Grab.type != "light" );
+                    //TensorMath.clampVector3InBounds( grabStartData.localStart, game.Board.Board.Bounds );
+                    GRABBED.position.copy( grabStartData.localStart );
+                    GRABBED.position.add( dir.CurrentOffset );
+                    TensorMath.clampVector3InBounds( GRABBED.position, game.Board.Board.Bounds );
+
+                    //GRABBED.position.x += mouseDelta.x * scl;
+                    //GRABBED.position.y += mouseDelta.y * scl;
+
                     if (GRABBED.userData.Grab) {
                         var grabInfo = GRABBED.userData.Grab;
                         if (grabInfo.type == "light") {
@@ -491,10 +559,14 @@
                 board_title.innerHTML = title;
             });
             
+            function updateMouseRay() {
+                raycaster.setFromCamera( mouse, camera );
+                return raycaster.ray;
+            }
 
             function findBestUnderMouse() {
                 
-				raycaster.setFromCamera( mouse, camera );
+                updateMouseRay();
 
                 //const intersects = raycaster.intersectObjects( scene.children );
                 const intersects = raycaster.intersectObject( scene, true );

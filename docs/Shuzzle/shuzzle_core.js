@@ -24,6 +24,11 @@ var TensorMath = {
             max:TensorMath.cloneVector3(b.max),
         };
     },
+    clampVector3InBounds : function(v,b) {
+        v.x = Math.max( b.min.x, Math.min( b.max.x, v.x ) );
+        v.y = Math.max( b.min.y, Math.min( b.max.y, v.y ) );
+        v.z = Math.max( b.min.z, Math.min( b.max.z, v.z ) );
+    },
     vector3MaxAxisDistanceXY : function(a,b) {
         return Math.min( Math.abs(a.x-b.x), Math.abs(a.y-b.y));
     },
