@@ -2,8 +2,6 @@
 
 Games freed of their traditional dimensionality. 
 
-Live hosted games: 
-
 ## Freed Go: 
 
 https://leweyg.github.io/FreedGames/FreedGo/
