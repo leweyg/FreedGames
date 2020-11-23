@@ -15,6 +15,7 @@ var ShuzzleThreeJS_Prototype = {
     GameGoal : null,
     GameLightHandle : null,
     GameLightSpot : null,
+    GameBlockCursor : null,
     MatsByType : {},
     RedrawCallback : null,
     DefaultScale : new THREE.Vector3(1,1,0.3),
@@ -314,8 +315,42 @@ var ShuzzleThreeJS_Prototype = {
             }
         }
 
+        this.BuildBlockCursor();
+
         this.Update();
-    }
+    },
+
+    BuildBlockCursor : function() {
+
+        var linePoints = [];
+
+        for (var axisI=0; axisI<3; axisI++) {
+            for (var signI=-1; signI<2; signI+=2) {
+                var loc = new THREE.Vector3(  0,  0,  0 );
+                loc.setComponent( axisI, signI*2 );
+                linePoints.push( loc );
+
+                loc = new THREE.Vector3(  0,  0,  0 );
+                loc.setComponent( axisI, signI*4 );
+                linePoints.push( loc );
+            }
+        }
+
+        const lineMat = new THREE.LineBasicMaterial({
+            color: 0xffFFff,
+            linewidth: 3,
+        });
+        const lineGeo = new THREE.BufferGeometry().setFromPoints( linePoints );
+        const lineObj = new THREE.LineSegments( lineGeo, lineMat );
+        lineObj.castShadow = false;
+        lineObj.receiveShadow = true;
+        this.GameBlockCursor = lineObj;
+        this.GameBlockCursor.visible = false;
+
+        this.SceneRoot.add( this.GameBlockCursor );
+
+        return lineObj;
+    },
 };
 
 var ShuzzleBoards_Puzzle1 = ShuzzleBoards["puzzle_1"];
