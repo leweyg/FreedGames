@@ -232,7 +232,7 @@
 
         </script>
 
-        <div id="main_gl_div">
+        <div id="main_gl_div"  oncontextmenu="return false;">
 
         </div>
 
@@ -257,6 +257,7 @@
             let theta = 0;
             let camera_rotate_around = 0;
             let camera_rotate_up = 0;
+            let camera_fixed = false;
 
             const grabStartData = {
                 grabbedBlock : null,
@@ -397,10 +398,10 @@
 				container.appendChild( renderer.domElement );
 
 				//stats = new Stats();
-				//container.appendChild( stats.dom );
+                //container.appendChild( stats.dom );
 
                 document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-                document.addEventListener( 'mouseup', onDocumentClicked, false );
+                document.addEventListener( 'mouseup', onDocumentMouseUpClicked, false );
                 document.addEventListener( 'mousedown', onDocumentMouseDown, false );
 
                 container.ontouchstart = ((evnt) => onTouchEventTop(evnt,true,false));
@@ -436,12 +437,9 @@
 
             }
             
-            function onDocumentClicked( event ) {
-                if (INTERSECTED && INTERSECTED.userData && INTERSECTED.userData.Grab) {
-                    var index = INTERSECTED.userData.Grab;
-                    game.OnClickedIndex( index );
-                }
-                grabStartData.setGrabbed( null );
+            function onDocumentMouseUpClicked( event ) {
+                onInnerMouseEvent( event, false, false, event.which == 3 );
+                //grabStartData.setGrabbed( null );
             }
 
             var latestTouchStart = new THREE.Vector2();
@@ -450,6 +448,7 @@
                 evnt.preventDefault();
 
                 var topTouch = (evnt.touches.length > 0) ? evnt.touches[0] : null;
+                var isRight = (evnt.touches.length > 1);
                 if (topTouch) {
                     var delta = Math.abs( latestTouchStart.x - topTouch.clientX);
                     delta += Math.abs( latestTouchStart.y - topTouch.clientY);
@@ -474,14 +473,13 @@
                 } else {
                     //console.log( "TouchEnd " + latestTouchSwiping);
                     if (!latestTouchSwiping) {
-
-                        onDocumentClicked(evnt);
+                        onDocumentMouseUpClicked(evnt);
                     }
                     grabStartData.setGrabbed( null );
                 }
 
                 for (var ti=0; ti<evnt.touches.length; ti++) {
-                    onInnerMouseEvent(evnt.touches[ti], isDown, isMove );
+                    onInnerMouseEvent(evnt.touches[ti], isDown, isMove, isRight );
                 }
             }
 
@@ -491,13 +489,25 @@
 
             const globalVectorZ = new THREE.Vector3(0,0,1);
 
-            function onInnerMouseEvent( event, isDown, isMove ) {
-            
+            function updateMouseAndRange(event) {
                 mousePrevious.copy( mouse );
                 mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
                 mouse.y = - ( ( event.clientY + window.pageYOffset - container.offsetTop ) / window.innerHeight ) * 2 + 1;
                 mouseDelta.copy( mouse );
                 mouseDelta.sub( mousePrevious );
+                var inRange = ((mouse.y > -1) && (mouse.y < 1));
+                return inRange;
+            }
+
+            function onInnerMouseEvent( event, isDown, isMove, isRight ) {
+            
+                var inRange = updateMouseAndRange(event);
+
+                if (!isMove && inRange) {
+                    if (isRight && !isDown) {
+                        camera_fixed = !camera_fixed;
+                    }
+                }
 
                 if (isDown && !isMove) {
                     var under = updateUnderMouse();
@@ -553,7 +563,7 @@
                         }
                     }
                 }
-                if (isMove && !GRABBED) {
+                if (isMove && !GRABBED && !camera_fixed) {
                     var lerpFactor = 0.03;
                     camera_rotate_around = customLerp( camera_rotate_around, mouse.x * 30.0, lerpFactor );
                     camera_rotate_up = customLerp( camera_rotate_up, mouse.y * 30.0, lerpFactor );
@@ -569,12 +579,12 @@
 
 			function onDocumentMouseMove( event ) {
                 event.preventDefault();
-                onInnerMouseEvent( event, false, true );
+                onInnerMouseEvent( event, false, true, event.which == 3 );
             }
             
             function onDocumentMouseDown( event ) {
-                //event.preventDefault();
-                onInnerMouseEvent( event, true, false );
+                var isRight = ( event.which == 3 );
+                onInnerMouseEvent( event, true, false, isRight );
 			}
 
 			//

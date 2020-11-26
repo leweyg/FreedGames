@@ -198,6 +198,7 @@ var ShuzzlePrototype_State = {
         var bounds = this.Game.Board.Board.Bounds;
         this.Fast.LightPos = TensorMath.cloneVector3( bounds.max );
         this.Fast.LightPos.x = ( bounds.min.x + bounds.max.x ) * 0.5;
+        this.Fast.LightPos.z += 0.5;
 
         this.Voxels = Object.create( ShuzzlePrototype_Voxels );
         this.Voxels.SetupFromBounds( bounds );
@@ -288,8 +289,9 @@ var ShuzzlePrototype_State = {
         if (this.DoPlaceStone( index, to )) {
             this.Core.Turn = ((this.Core.Turn + 1)%2);
         }
-        */
+        
         this.DoCoreChangedLocally();
+        */
     }
 
 };
