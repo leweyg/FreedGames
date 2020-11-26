@@ -337,7 +337,7 @@ var ShuzzleThreeJS_Prototype = {
         }
 
         const lineMat = new THREE.LineBasicMaterial({
-            color: 0xffFFff,
+            color: 0x334433,
             linewidth: 3,
         });
         const lineGeo = new THREE.BufferGeometry().setFromPoints( linePoints );

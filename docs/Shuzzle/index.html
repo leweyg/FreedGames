@@ -247,6 +247,11 @@
             
             game = ShuzzleGame_Create();
 
+            const mouse = new THREE.Vector2();
+            const mousePrevious = new THREE.Vector2();
+            const mouseDelta = new THREE.Vector2();
+			const radius = 10;
+
             let INTERSECTED;
             let GRABBED;
             let theta = 0;
@@ -254,6 +259,7 @@
             let camera_rotate_up = 0;
 
             const grabStartData = {
+                grabbedBlock : null,
                 localStart : new THREE.Vector3(),
                 worldStart : new THREE.Vector3(),
                 worldPlane : new THREE.Plane(),
@@ -263,6 +269,22 @@
                 tempBestPos : new THREE.Vector3(),
                 tempMatrix4 : new THREE.Matrix4(),
                 cursorWorldRay : new THREE.Ray(),
+                setGrabbed : function(item) {
+                    this.grabbedBlock = item;
+                    GRABBED = item;
+
+                    var isVisible = !(!item);
+                    if (item && item.userData && item.userData.Grab) {
+                        if (item.userData.Grab.type != "block") {
+                            isVisible = false;
+                        }
+                    }
+                    game.Render.GameBlockCursor.visible = isVisible;
+                    if (isVisible) {
+                        game.Render.GameBlockCursor.position.copy( item.position );
+                    }
+                    requestRedraw();
+                },
                 directions : [
                     { dir:new THREE.Vector3(1,0,0) },
                     { dir:new THREE.Vector3(-1,0,0) },
@@ -305,10 +327,7 @@
                     return bestDir;
                 },
             };
-            const mouse = new THREE.Vector2();
-            const mousePrevious = new THREE.Vector2();
-            const mouseDelta = new THREE.Vector2();
-			const radius = 10;
+
 
 			init();
             animate();
@@ -422,7 +441,7 @@
                     var index = INTERSECTED.userData.Grab;
                     game.OnClickedIndex( index );
                 }
-                GRABBED = null;
+                grabStartData.setGrabbed( null );
             }
 
             var latestTouchStart = new THREE.Vector2();
@@ -447,9 +466,10 @@
                         if (!isSwiping) {
                             isMove = false;
                         }
-                    } else if (!isDown && !isMove && !isSwiping) {
+                    } else if (!isDown && !isMove) {
                         //isClick = true;
-                        //GRABBED = null;
+                        //grabStartData.setGrabbed( null );
+                        grabStartData.setGrabbed( null );
                     }
                 } else {
                     //console.log( "TouchEnd " + latestTouchSwiping);
@@ -457,7 +477,7 @@
 
                         onDocumentClicked(evnt);
                     }
-                    GRABBED = null;
+                    grabStartData.setGrabbed( null );
                 }
 
                 for (var ti=0; ti<evnt.touches.length; ti++) {
@@ -481,9 +501,9 @@
 
                 if (isDown && !isMove) {
                     var under = updateUnderMouse();
-                    GRABBED = under;
-                    if (GRABBED) {
-                        grabStartData.localStart.copy( GRABBED.position );
+                    grabStartData.setGrabbed( under );
+                    if (under) {
+                        grabStartData.localStart.copy( under.position );
                     }
                 }
                 if (isMove && GRABBED) {
@@ -539,7 +559,7 @@
                     camera_rotate_up = customLerp( camera_rotate_up, mouse.y * 30.0, lerpFactor );
                 }
                 if (!isMove && !isDown) {
-                    GRABBED = null;
+                    grabStartData.setGrabbed( null );
                 }
 
                 mousePrevious.copy( mouse );
