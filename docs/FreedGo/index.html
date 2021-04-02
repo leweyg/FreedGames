@@ -133,6 +133,7 @@
             var game = null;
             var freedGoDataPath = "public/rooms";
 
+            var new_board_selector_ignore_change = false;
             function setupBoardSelection() {
                 var boards = FreedGoBoards;
                 for (var i in boards){
@@ -145,12 +146,19 @@
                 }
                 new_board_selector.value = "mobius";
                 new_board_selector.onchange = (() => {
+                    if (new_board_selector_ignore_change) return;
                     var newVal = new_board_selector.value;
                     var board = FreedGoBoards[newVal];
                     game.ChangeBoard( board );
                 });
             }
             setupBoardSelection();
+            function changeBoardSelector(toName) {
+                if (new_board_selector.value == toName) return;
+                new_board_selector_ignore_change = true;
+                new_board_selector.value = toName;
+                new_board_selector_ignore_change = false;
+            }
 
 
             function doSaveAsNew() {
@@ -459,6 +467,7 @@
 
 
                 board_title.innerHTML = title;
+                changeBoardSelector(game.State.Core.BoardName);
             });
             
 
