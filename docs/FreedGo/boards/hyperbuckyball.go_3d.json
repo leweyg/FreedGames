@@ -1,4 +1,4 @@
-{"Name":"hyper buckyball", "NodeScale":0.1, "StartP0":0, "StartP1":1, "Nodes":[
+{"Name":"hyperbuckyball", "NodeScale":0.1, "StartP0":0, "StartP1":1, "Nodes":[
 {"Index":0, "Neighbors":[2,28,32,60], "Position":{"x":-0.000000, "y":-0.285714, "z":-1.386886}, "Normal":{"x":-0.000000, "y":-0.201774, "z":-0.979432}, "NumNeighbors":4 },
 {"Index":1, "Neighbors":[3,29,33,61], "Position":{"x":-0.000000, "y":-0.285714, "z":1.386886}, "Normal":{"x":-0.000000, "y":-0.201774, "z":0.979432}, "NumNeighbors":4 },
 {"Index":2, "Neighbors":[0,30,34,62], "Position":{"x":-0.000000, "y":0.285714, "z":-1.386886}, "Normal":{"x":-0.000000, "y":0.201774, "z":-0.979432}, "NumNeighbors":4 },
