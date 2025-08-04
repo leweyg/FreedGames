@@ -48,8 +48,8 @@ class CaptureSystem {
             console.log("Done...");
         }
 
-        doExportNow() {
-            const exportPrefix = "gentools/data_";
+        doExportNow(viewId) {
+            const exportPrefix = "gentools/view_" + viewId + "_";
             var renderer = this.renderer;
             renderer.setRenderTarget( this.renderTarget );
             renderer.clear();
@@ -58,10 +58,11 @@ class CaptureSystem {
             var camObj = this.captureCamera;
 
             renderer.setRenderTarget(null);
-            this._doExportRenderTarget(this.renderTarget, exportPrefix + "color.png", this.exportCanvas, camObj);
+            this._doExportRenderTarget(this.renderTarget, exportPrefix, this.exportCanvas, camObj);
         }
 
-        async _doExportRenderTarget(target,path,canvas,camInfo) {
+        async _doExportRenderTarget(target,exportPrefix,canvas,camInfo) {
+            const save_path_img = exportPrefix + "color.png";
                 this.renderer.readRenderTargetPixels(target,
                         0, 0, this.sizeW, this.sizeH, this.readBufferData);
 
@@ -82,16 +83,23 @@ class CaptureSystem {
                 ctx.putImageData(this.readImageBuffer, 0, 0);
                 
                 canvas.toBlob((imgBlob) => {
-                        CaptureFileSystem.SaveFileContent(path, imgBlob, (res)=>{
-                            alert("Post Responce=" + res);
+                        CaptureFileSystem.SaveFileContent(save_path_img, imgBlob, (res)=>{
+                            //alert("Post Responce=" + res);
                         });
                 });
         }
 
 }
 
+class ExportSceneSystem {
+    static jsonObjectFromThreeCamera(camera) {
+        throw "TODO: Next step..."
+    }
+}
+
 class CaptureFileSystem {
         static SaveFileContent(path,content,callback,folderRoot="") {
+            console.log("Saving to '" + path + "'...");
                 var url = folderRoot + "gentools/save_to_file.php?path=" + path;
                 if (path.includes("/")) {
                         var dir = path.substring(0,path.lastIndexOf("/"));

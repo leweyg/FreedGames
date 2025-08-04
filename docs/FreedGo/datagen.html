@@ -246,12 +246,12 @@
             var gDataGenCapture = null;
             var gDataGenSetup = null;
 
-            function doDataGenCapture() {
+            function doDataGenCapture(viewId) {
                 console.log("doDataGenCapture...");
                 if (!gDataGenCapture) {
                     gDataGenSetup();
                 }
-                gDataGenCapture.doExportNow();
+                gDataGenCapture.doExportNow(viewId);
                 //gDataGenCapture.doTest();
                 console.log("doDataGenCapture done.");
             }
@@ -555,17 +555,17 @@
 
             <table><tr width="100%">
                 <td>
-                    <input type="button" value="capture" onclick="doDataGenCapture();" />
+                    <input type="button" value="capture" onclick="doDataGenCapture(1);" />
                 </td>
                 <td width="35%">
                 </td>
                 <td>
-                    <input type="button" value="capture" onclick="doDataGenCapture();" />
+                    <input type="button" value="capture" onclick="doDataGenCapture(2);" />
                 </td>
                 <td width="35%">
                 </td>
                 <td>
-                    <input type="button" value="capture" onclick="doDataGenCapture();" />
+                    <input type="button" value="capture" onclick="doDataGenCapture(3);" />
                 </td>
             </tr></table>
             
