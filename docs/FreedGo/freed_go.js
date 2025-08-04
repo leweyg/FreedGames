@@ -230,6 +230,7 @@ var FreedGoThreeJS_Prototype = {
 
         this.SceneParent = contextObj;
         var scene = new THREE.Group();
+        scene.name = "board";
         //scene.quaternion.setFromAxisAngle(new THREE.Vector3(0,0,1),-90);
         this.SceneRoot = scene;
 
@@ -258,6 +259,7 @@ var FreedGoThreeJS_Prototype = {
             stone.position.copy( node.Position );
             stone.position.multiplyScalar( board_scale );
             stone.userData.Node = node;
+            stone.name = "stone_" + ni;
             this.Stones.push( stone );
 
             lookTo.copy( node.Normal );
@@ -292,6 +294,7 @@ var FreedGoThreeJS_Prototype = {
             });
             const lineGeo = new THREE.BufferGeometry().setFromPoints( linePoints );
             const lineObj = new THREE.LineSegments( lineGeo, lineMat );
+            lineObj.name = "lines";
             this.SceneRoot.add( lineObj );
         }
 
@@ -300,6 +303,7 @@ var FreedGoThreeJS_Prototype = {
             for (var ti=0; ti<2; ti++) {
                 const cursorObj = new THREE.Mesh( geometry, this.MatsByType[ti] );
                 cursorObj.scale.set( 0.5, 0.5, 0.5 );
+                cursorObj.name = 'cursor';
                 this.SceneRoot.add( cursorObj );
                 this.Cursors[ti] = cursorObj;
             }

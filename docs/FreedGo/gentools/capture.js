@@ -63,6 +63,8 @@ class CaptureSystem {
 
         async _doExportRenderTarget(target,exportPrefix,canvas,camInfo) {
             const save_path_img = exportPrefix + "color.png";
+            const save_path_json = exportPrefix + "scene.json";
+            const save_path_img_relative = save_path_img.substring(save_path_img.lastIndexOf("/")+1);
                 this.renderer.readRenderTargetPixels(target,
                         0, 0, this.sizeW, this.sizeH, this.readBufferData);
 
@@ -87,13 +89,85 @@ class CaptureSystem {
                             //alert("Post Responce=" + res);
                         });
                 });
+
+                var obj = ExportSceneSystem.jsonObjectFromThreeElementRecursive(this.sceneRoot)
+                var camObj = ExportSceneSystem.jsonObjectFromThreeCamera(camInfo, save_path_img_relative);
+                obj.children.push(camObj)
+                var txt = ExportSceneSystem.textFromJsonObject(obj);
+                CaptureFileSystem.SaveFileContent(save_path_json, txt, (res)=>{
+                    //alert("Post Responce=" + res);
+                });
         }
 
 }
 
 class ExportSceneSystem {
-    static jsonObjectFromThreeCamera(camera) {
-        throw "TODO: Next step..."
+    static textFromJsonObject(obj) {
+        return JSON.stringify(obj,null,2);
+    }
+    static gRefIdentity = null;
+    static isMatrix4Identity(mat) {
+        if (!this.gRefIdentity) {
+            this.gRefIdentity = new THREE.Matrix4();
+            this.gRefIdentity.identity();
+        }
+        return mat.equals(this.gRefIdentity);
+    }
+    static jsonObjectFromThreeElementRecursive(el) {
+        const ans = {};
+        if (el.name) {
+            ans.name = el.name;
+        }
+        if (el.matrix && !this.isMatrix4Identity(el.matrix)) {
+            ans.pose = this.fromThreeMatrix(el.matrix);
+        }
+        if (el.children && el.children.length) {
+            ans.children = [];
+            for (var ci in el.children) {
+                const child = el.children[ci];
+                const cobj = this.jsonObjectFromThreeElementRecursive(child);
+                ans.children.push(cobj)
+            }
+        }
+        return ans;
+    }
+    static jsonObjectFromThreeCamera(camera, image_path) {
+        const image = {
+            name:"image",
+            data:{path:image_path},
+            unpose:"pixel_index_from_unit_viewport",
+            
+        }
+        const lens = {
+            name: "lens",
+            children : [image],
+            unpose:this.fromThreeMatrix(camera.projectionMatrix),
+            
+        };
+        var placed = {
+            name: camera.name ? camera.name : "camera",
+            children: [lens],
+            pose:this.fromThreeMatrix(camera.matrix),
+            
+        }
+        console.assert(!camera.parent) // TODO: support later on
+        for (var par = camera.parent; par; par = par.parent) {
+            par_placed = {
+                name: par.name,
+                children: [placed],
+                pose: this.fromThreeMatrix(par.matrix),
+                
+            }
+            placed = par_placed;
+        }
+        return placed;
+    }
+    static fromThreeMatrix(mat) { // mat : THREE.Matrix4
+        return {
+            shape:[4,4],
+            dtype:"number",
+            data:mat.elements,
+        }
     }
 }
 
