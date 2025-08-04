@@ -22,6 +22,7 @@
         <script src="three.js"></script>
         <script src="boards_all.js"></script>
         <script src="freed_go.js"></script>
+        <script src="gentools/capture.js"></script>
 
         <!-- The core Firebase JS SDK is always required and must be listed first -->
 <script src="https://www.gstatic.com/firebasejs/3.1.0/firebase.js"></script>
@@ -241,6 +242,21 @@
 
         </script>
 
+        <script>
+            var gDataGenCapture = null;
+            var gDataGenSetup = null;
+
+            function doDataGenCapture() {
+                console.log("doDataGenCapture...");
+                if (!gDataGenCapture) {
+                    gDataGenSetup();
+                }
+                gDataGenCapture.doExportNow();
+                //gDataGenCapture.doTest();
+                console.log("doDataGenCapture done.");
+            }
+        </script>
+
         <div id="main_gl_div">
 
         </div>
@@ -326,6 +342,11 @@
 				renderer.setPixelRatio( window.devicePixelRatio );
                 renderer.setSize( window.innerWidth, window.innerHeight );
 				container.appendChild( renderer.domElement );
+
+                gDataGenSetup = (() => {
+                    gDataGenCapture = new CaptureSystem(renderer, scene, camera, main_export_canvas, null);
+                    return gDataGenCapture;
+                });
 
 				//stats = new Stats();
 				//container.appendChild( stats.dom );
@@ -526,13 +547,21 @@
 				renderer.render( scene, camera );
 
 			}
-
             onWindowResize()
 
         </script>
+
+        <div>
+
+            <input type="button" value="capture" onclick="doDataGenCapture();" />
+            <br/>
+            <canvas width="256" height="256" id="main_export_canvas">
+
+            </canvas>
+        </div>
         
         <div>
-            
+
             By <a href="http://www.lewcid.com/lg/aboutme.html">Lewey Geselowitz</a>, based on <a href="http://www.lewcid.com/lg/lc/freedgo.html">Freed Go (v1)</a> and the 
             <a href="https://en.wikipedia.org/wiki/Go_(game)">Game of Go</a>; 
             <a href="https://online-go.com/learn-to-play-go/capture/" target="_blank">learn here</a>.
