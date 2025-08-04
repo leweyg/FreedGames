@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>DataGen Mode - Freed Go - Lewcid.com</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
+		<style>
+			body {
+				background-color: #6caf56;
+                color: rgb(236, 236, 236);
+                /* color-adjust: #b17c52; */
+			}
+			a {
+				color: #08f;
+			}
+		</style>
+	</head>
+	<body>
+
+
+        <script src="three.js"></script>
+        <script src="boards_all.js"></script>
+        <script src="freed_go.js"></script>
+
+        <!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/3.1.0/firebase.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyCp0000xxvBPw7OrUDTMqAqHU7AlhGK4gE",
+    authDomain: "freedgo-4a947.firebaseapp.com",
+    databaseURL: "https://freedgo-4a947.firebaseio.com",
+    projectId: "freedgo-4a947",
+    storageBucket: "freedgo-4a947.appspot.com",
+    messagingSenderId: "460959755744",
+    appId: "1:460959755744:web:c00861c4e0380966cfcf85"
+  };
+  // Initialize Firebase
+  var firebaseIsInited = false;
+  function firebaseEnsure() {
+      if (firebaseIsInited) return;
+      firebaseIsInited = true;
+
+      firebase.initializeApp(firebaseConfig);
+  }
+  
+</script>
+
+
+<script>
+    // custom firebase wrapper:
+
+    function firebaseReadAsync(path,callback) {
+        firebaseEnsure();
+        var ref = firebase.database().ref(path);
+        ref.on("value",function(snapshot) {
+        //ref.once("value").then(function(snapshot) {
+            var key = snapshot.key; // "ada"
+            //var childKey = snapshot.child("name/last").key; // "last"
+            var v = snapshot.val();
+            callback( v );
+        });
+    }
+
+    function firebaseWriteUpdate(path,val) {
+        firebaseEnsure();
+        var ref = firebase.database().ref(path);
+        return ref.set(val);
+    }
+
+    function firebaseWriteAppend(path,val,callback) {
+        firebaseEnsure();
+        var ref = firebase.database().ref(path);
+        var action = ref.push(val);
+        var key = action.key;
+        if (callback) {
+            action.then(() => callback(key));
+        }
+        return key;
+    }
+
+    function firebaseDelete(path) {
+        firebaseEnsure();
+        var ref = firebase.database().ref(path);
+        ref.remove().then(function() {
+                console.log("Remove succeeded.")
+            })
+            .catch(function(error) {
+                console.log("Remove failed: " + error.message)
+            });
+    }
+</script>
+
+
+        <div id="not_info">
+            <a href="https://github.com/leweyg/FreedGames/" 
+            style="text-decoration: none; color:white;">
+                Freed Go</a>
+
+            - <span id="board_title"></span>
+            
+            - <select id="new_board_selector">
+                </select>
+                <script>
+                    var FreedGoRoomName = null;
+                    function checkFreedGoRoom() {
+                        const queryString = window.location.search;
+                        const urlParams = new URLSearchParams(queryString);
+                        const room = urlParams.get("room");
+
+                        if (room) FreedGoRoomName = room;
+                        if (!FreedGoRoomName) return;
+                    }
+                    checkFreedGoRoom();
+                </script>
+        
+            -  
+            <span id="main_copy_link_span">
+                <a onclick="doCopyLink();" id="main_copy_link">copy room link</a>
+                or 
+            </span>
+            <a onclick="doSaveAsNew();" id="main_share_new">save/shareable</a>
+            - <a onclick="doPass();">pass</a>
+
+            - <a href="http://lewcid.com/" target="_blank" rel="noopener">lewcid.com</a> 
+        </div>
+        <script>
+            var game = null;
+            var freedGoDataPath = "public/rooms";
+
+            var new_board_selector_ignore_change = false;
+            function setupBoardSelection() {
+                var boards = FreedGoBoards;
+                for (var i in boards){
+                    var name = boards[i].Name;
+                    var opt = document.createElement('option');
+                    opt.value = name;
+                    opt.innerHTML = name;
+                    new_board_selector.appendChild(opt);
+                    
+                }
+                new_board_selector.value = "mobius";
+                new_board_selector.onchange = (() => {
+                    if (new_board_selector_ignore_change) return;
+                    var newVal = new_board_selector.value;
+                    var board = FreedGoBoards[newVal];
+                    game.ChangeBoard( board );
+                });
+            }
+            setupBoardSelection();
+            function changeBoardSelector(toName) {
+                if (new_board_selector.value == toName) return;
+                new_board_selector_ignore_change = true;
+                new_board_selector.value = toName;
+                new_board_selector_ignore_change = false;
+            }
+
+
+            function doSaveAsNew() {
+                game.State.PreCoreSave();
+                var roomData = {
+                    core:game.State.Core, 
+                    fast:game.State.Fast 
+                };
+                //console.log("Sending...");
+                firebaseWriteAppend( freedGoDataPath, roomData, (roomId) => {
+                    console.log("Got room id...");
+                    var to = window.location.href.split('?')[0] + "?room=" + roomId;
+                    window.location.href = to;
+                });
+                //console.log("Waiting...");
+            }
+
+            function doGoReset() {
+                //window.location.href = window.location.href.split('?')[0];
+                window.location.href = "https://github.com/leweyg/FreedGames/";
+            }
+
+            function doSaveCoreOrFast(isCore,isFast) {
+                var path = freedGoDataPath + "/" + FreedGoRoomName;
+                if (isCore) {
+                    game.State.PreCoreSave();
+                    firebaseWriteUpdate( path + "/core", game.State.Core );
+                }
+                if (isFast) {
+                    firebaseWriteUpdate( path + "/fast", game.State.Fast );
+                }
+            }
+
+            function setupRoomQuery() {
+                var roomName = FreedGoRoomName;
+                if (!roomName) return;
+
+                // continue here.
+                firebaseReadAsync(freedGoDataPath + "/" + roomName + "/core" , (state) => {
+                    if (!state) return;
+                    game.CheckBoardName( state.BoardName );
+                    game.State.Core = state;
+                    game.State.DoCoreChangedRemote();
+                });
+                firebaseReadAsync(freedGoDataPath + "/" + roomName + "/fast" , (state) => {
+                    if (!state) return;
+                    game.State.Fast = state;
+                    game.State.DoFastChangedLocally();
+                });
+                FreedGoSaveCallbacks.DoSaveCore = (() => doSaveCoreOrFast(true,false));
+                FreedGoSaveCallbacks.DoSaveFast = (() => doSaveCoreOrFast(false,true));
+            }
+
+            if (FreedGoRoomName) {
+                main_share_new.innerHTML = "branch room";
+            } else {
+                main_copy_link_span.style.display = "none";
+            }
+
+            function messageList_CopyMessageByKey(message_key) {
+                var intoEl = main_post_text;
+                intoEl.value = message_key;
+                intoEl.style.display = "inline";
+                intoEl.select();
+                var copied = document.execCommand('copy');
+                if (copied) {
+                    alert("Copied: " + message_key);
+                }
+                intoEl.style.display = "none";
+            }
+
+            function doCopyLink() {
+                messageList_CopyMessageByKey( window.location.href );
+            }
+
+
+            function doPass() {
+                game.OnLocalUserPassed( );
+            }
+
+        </script>
+
+        <div id="main_gl_div">
+
+        </div>
+
+		<script type="module">
+
+			//import * as THREE from 'three.js';
+
+			//import Stats from './jsm/libs/stats.module.js';
+
+			let container;//, stats;
+            let camera, scene, raycaster, renderer, light;
+            
+            game = FreedGoGame_Create();
+
+			let INTERSECTED;
+            let theta = 0;
+            let camera_rotate_around = 0;
+            let camera_rotate_up = 0;
+
+            const mouse = new THREE.Vector2();
+            const mousePrevious = new THREE.Vector2();
+			const radius = 100;
+
+			init();
+            animate();
+
+            setupRoomQuery();
+
+			function init() {
+
+				//container = document.createElement( 'div' );
+                //document.body.appendChild( container );
+                container = main_gl_div;
+
+				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
+
+				scene = new THREE.Scene();
+                scene.background = new THREE.Color( 0x6caf56 );
+                
+                var ambientLight = new THREE.AmbientLight( 0xa0a0a0 ); // soft white light
+                scene.add( ambientLight );
+
+				light = new THREE.DirectionalLight( 0x6f6f6f, 1 );
+                light.position.set( 1, 1, 1 ).normalize();
+                light.target = scene;
+                scene.add( light );
+                
+                const board_scale = 35.0;
+                const piece_scale = 0.1;
+
+                const geometry = new THREE.BoxBufferGeometry( 20, 20, 20 );
+                
+                game.Render.Build ( scene );
+
+                /*
+				for ( let i = 0; i < 2000; i ++ ) {
+
+					const object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) );
+
+					object.position.x = Math.random() * 2 - 1;
+					object.position.y = Math.random() * 2 - 1;
+                    object.position.z = Math.random() * 2 - 1;
+                    object.position.multiplyScalar( board_scale );
+
+					object.rotation.x = Math.random() * 2 * Math.PI;
+					object.rotation.y = Math.random() * 2 * Math.PI;
+					object.rotation.z = Math.random() * 2 * Math.PI;
+
+					object.scale.x = Math.random() + 0.5;
+					object.scale.y = Math.random() + 0.5;
+                    object.scale.z = Math.random() + 0.5;
+                    object.scale.multiplyScalar( piece_scale );
+
+					//scene.add( object );
+
+                }
+                */
+
+				raycaster = new THREE.Raycaster();
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio( window.devicePixelRatio );
+                renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+				//stats = new Stats();
+				//container.appendChild( stats.dom );
+
+                document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+                document.addEventListener( 'mouseup', onDocumentClicked, false );
+
+                container.ontouchstart = ((evnt) => onTouchEventTop(evnt,true,false));
+                container.ontouchmove = ((evnt) => onTouchEventTop(evnt,true,true));
+                container.ontouchend = ((evnt) => onTouchEventTop(evnt,false,false));
+
+
+				//
+
+                window.addEventListener( 'resize', onWindowResize, false );
+                
+                requestRedraw();
+
+            }
+            
+            var _requestInProgress = false;
+            
+            function requestRedraw() {
+                if (_requestInProgress) return;
+                _requestInProgress = true;
+                requestAnimationFrame( animate );
+            }
+            game.Render.RedrawCallback = (() => requestRedraw());
+
+			function onWindowResize() {
+
+                const cw = 256; //window.innerWidth;
+                const ch = 256; //window.innerHeight;
+
+				camera.aspect = cw / ch;
+				camera.updateProjectionMatrix();
+
+                renderer.setSize( cw, ch ); //window.innerWidth, window.innerHeight );
+                
+                requestRedraw();
+
+            }
+            
+            function onDocumentClicked( event ) {
+                if (INTERSECTED && INTERSECTED.userData && INTERSECTED.userData.Node) {
+                    var index = INTERSECTED.userData.Node.Index;
+                    game.OnClickedIndex( index );
+                }
+            }
+
+            var latestTouchStart = new THREE.Vector2();
+            var latestTouchSwiping = false;
+            function onTouchEventTop(evnt,isDown,isMove) {
+                evnt.preventDefault();
+
+                var topTouch = (evnt.touches.length > 0) ? evnt.touches[0] : null;
+                if (topTouch) {
+                    var delta = Math.abs( latestTouchStart.x - topTouch.clientX);
+                    delta += Math.abs( latestTouchStart.y - topTouch.clientY);
+                    var isSwiping = (delta > 15);
+                    //var isClick = false;
+                    //console.log( "Touch " + isDown + " " + isMove + " " + isSwiping + " " + delta);
+
+                    if (isDown && !isMove) {
+                        latestTouchStart.x = topTouch.clientX;
+                        latestTouchStart.y = topTouch.clientY;
+                        latestTouchSwiping = false;
+                    } else if (isMove) {
+                        latestTouchSwiping = isSwiping;
+                        if (!isSwiping) {
+                            isMove = false;
+                        }
+                    } else if (!isDown && !isMove && !isSwiping) {
+                        //isClick = true;
+                    }
+                } else {
+                    //console.log( "TouchEnd " + latestTouchSwiping);
+                    if (!latestTouchSwiping) {
+
+                        onDocumentClicked(evnt);
+                    }
+                }
+
+                for (var ti=0; ti<evnt.touches.length; ti++) {
+                    onInnerMouseEvent(evnt.touches[ti], isDown, isMove );
+                }
+            }
+
+            function customLerp(a, b, t) {
+                return ((a*(1-t)) + (b*t));
+            }
+
+            function onInnerMouseEvent( event, isDown, isMove ) {
+            
+                mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+                mouse.y = - ( ( event.clientY + window.pageYOffset - container.offsetTop ) / window.innerHeight ) * 2 + 1;
+
+                if (isMove) {
+                    var lerpFactor = 0.03;
+                    camera_rotate_around = customLerp( camera_rotate_around, mouse.x * 60.0, lerpFactor );
+                    camera_rotate_up = customLerp( camera_rotate_up, mouse.y * 60.0, lerpFactor );
+                }
+
+                mousePrevious.copy( mouse );
+
+                requestRedraw();
+            }
+
+			function onDocumentMouseMove( event ) {
+                event.preventDefault();
+                onInnerMouseEvent( event, false, true );
+			}
+
+			//
+
+			function animate() {
+                _requestInProgress = false;
+
+				//requestAnimationFrame( animate );
+
+				render();
+				//stats.update();
+
+            }
+            
+            function randomizeEmissive(INTERSECTED) {
+                if ( INTERSECTED && INTERSECTED.material.emissive ) {
+                    //INTERSECTED.material.emissive.setHex( 0xff0000 );
+                }
+            }
+
+            game.OnCoreUpdated.push(() => {
+                var turn = game.State.Core.Turn;
+                var white = "<span style='color:white'>" + game.State.Core.Taken[0];
+                var black = "<span style='color:black'>" + game.State.Core.Taken[1];
+                var title = "";
+                if (turn == 0) {
+                    title = white + "/</span>" + black + "</span>"; 
+                } else {
+                    title = black + "/</span>" + white + "</span>"; 
+                }
+
+
+                board_title.innerHTML = title;
+                changeBoardSelector(game.State.Core.BoardName);
+            });
+            
+
+            function findBestUnderMouse() {
+                
+				raycaster.setFromCamera( mouse, camera );
+
+                //const intersects = raycaster.intersectObjects( scene.children );
+                const intersects = raycaster.intersectObject( scene, true );
+
+                for (var ii in intersects) {
+                    var info = intersects[ii].object;
+                    if (info.userData && info.userData.Node) {
+                        return info;
+                    }
+                }
+
+                return undefined;
+            }
+
+			function render() {
+
+				//theta += 0.2;
+
+                var upScl = Math.cos( THREE.MathUtils.degToRad( camera_rotate_up ) );
+				camera.position.x = radius * Math.sin( THREE.MathUtils.degToRad( camera_rotate_around ) ) * upScl;
+				camera.position.y = radius * Math.sin( THREE.MathUtils.degToRad( camera_rotate_up ) );
+				camera.position.z = radius * Math.cos( THREE.MathUtils.degToRad( camera_rotate_around ) ) * upScl;
+				camera.lookAt( scene.position );
+
+                camera.updateMatrixWorld();
+                light.position.copy( camera.position );
+                light.updateMatrix();
+                light.updateMatrixWorld();
+
+				// find intersections
+
+                const next = findBestUnderMouse();
+                if ( INTERSECTED != next ) {
+
+                    INTERSECTED = next;
+
+                    if (INTERSECTED) {
+                        var index = INTERSECTED.userData.Node.Index;
+                        game.OnHoveredOver( index );
+                    } else {
+                        game.OnHoveredOver( -1 );
+                    }
+
+                }
+
+
+				renderer.render( scene, camera );
+
+			}
+
+            onWindowResize()
+
+        </script>
+        
+        <div>
+            
+            By <a href="http://www.lewcid.com/lg/aboutme.html">Lewey Geselowitz</a>, based on <a href="http://www.lewcid.com/lg/lc/freedgo.html">Freed Go (v1)</a> and the 
+            <a href="https://en.wikipedia.org/wiki/Go_(game)">Game of Go</a>; 
+            <a href="https://online-go.com/learn-to-play-go/capture/" target="_blank">learn here</a>.
+            <input type="text" id="main_post_text" style="display: none;" />
+        </div>
+  
+
+	</body>
+</html>
