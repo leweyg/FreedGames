@@ -4,11 +4,6 @@ class CaptureSystem {
             this.renderer = renderer;
             this.sceneRoot = sceneRoot;
             this.mainCamera = mainCamera;
-            this.previewGroup = null;
-            this.timeCaptured = Date.now();
-            this.forceCapture = false;
-            this.captureStep = -1;
-            this.captureStepLast = -1;
             this.exportCanvas = exportCanvas;
 
             this.savingActiveNow = false;
@@ -22,8 +17,8 @@ class CaptureSystem {
 
             const renderSize = new THREE.Vector2();
             renderer.getSize(renderSize)
-            var sizeH = renderSize.x; // GNDPacketSocketSizes ? 64 : 480; //16 * 6; // 480 // 16 * 6
-            var sizeW = renderSize.y; //GNDPacketSocketSizes ? 64 : 544; //16 * 8; // 544 // 16 * 8
+            var sizeH = renderSize.x;
+            var sizeW = renderSize.y;
             this.sizeH = sizeH;
             this.sizeW = sizeW;
             this.renderTarget = new THREE.WebGLRenderTarget( sizeW, sizeH );
@@ -94,7 +89,7 @@ class CaptureSystem {
                 var obj = ExportSceneSystem.jsonObjectFromThreeElementRecursive(this.sceneRoot, objScene)
                 var camObj = ExportSceneSystem.jsonObjectFromThreeCamera(camInfo, save_path_img_relative);
                 obj.children.push(camObj)
-                obj.children.push(ExportSceneSystem.jsonObjectProjectedInfo(this.sceneRoot, camInfo))
+                ExportSceneSystem.jsonObjectProjectedInfo(this.sceneRoot, camInfo, objScene);
                 objScene.root = obj;
                 var txt = ExportSceneSystem.textFromJsonObject(objScene);
                 CaptureFileSystem.SaveFileContent(save_path_json, txt, (res)=>{
@@ -116,14 +111,11 @@ class ExportSceneSystem {
         }
         return mat.equals(this.gRefIdentity);
     }
-    static jsonObjectProjectedInfo(worldRoot, camera) {
+    static jsonObjectProjectedInfo(worldRoot, camera, objScene) {
         const ans = {
-            name:"projected_points",
-            content:{
                 shape:[0,2,3], // fill out later
                 data:[],
                 dtype:"number",
-            }
         }
         var pos = new THREE.Vector3();
         var rows = 0;
@@ -134,14 +126,15 @@ class ExportSceneSystem {
                 const stone = board.children[si];
                 if (!stone.name.startsWith("stone")) continue;
                 pos.setFromMatrixPosition(stone.matrixWorld);
-                ans.content.data.push(pos.x, pos.y, pos.z);
+                ans.data.push(pos.x, pos.y, pos.z);
                 pos.project(camera)
-                ans.content.data.push(pos.x, pos.y, pos.z);
+                ans.data.push(pos.x, pos.y, pos.z);
                 rows++;
             }
         }
-        ans.content.shape[0] = rows;
+        ans.shape[0] = rows;
 
+        objScene.tensors["projected_points"] = ans;
         return ans;
     }
     static dataArrayFromAttribute3(attrib) {
