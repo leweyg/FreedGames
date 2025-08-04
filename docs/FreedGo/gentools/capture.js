@@ -90,10 +90,13 @@ class CaptureSystem {
                         });
                 });
 
-                var obj = ExportSceneSystem.jsonObjectFromThreeElementRecursive(this.sceneRoot)
+                var objScene = {root:null, objects:{}, tensors:{}}
+                var obj = ExportSceneSystem.jsonObjectFromThreeElementRecursive(this.sceneRoot, objScene)
                 var camObj = ExportSceneSystem.jsonObjectFromThreeCamera(camInfo, save_path_img_relative);
                 obj.children.push(camObj)
-                var txt = ExportSceneSystem.textFromJsonObject(obj);
+                obj.children.push(ExportSceneSystem.jsonObjectProjectedInfo(this.sceneRoot, camInfo))
+                objScene.root = obj;
+                var txt = ExportSceneSystem.textFromJsonObject(objScene);
                 CaptureFileSystem.SaveFileContent(save_path_json, txt, (res)=>{
                     //alert("Post Responce=" + res);
                 });
@@ -113,7 +116,80 @@ class ExportSceneSystem {
         }
         return mat.equals(this.gRefIdentity);
     }
-    static jsonObjectFromThreeElementRecursive(el) {
+    static jsonObjectProjectedInfo(worldRoot, camera) {
+        const ans = {
+            name:"projected_points",
+            content:{
+                shape:[0,2,3], // fill out later
+                data:[],
+                dtype:"number",
+            }
+        }
+        var pos = new THREE.Vector3();
+        var rows = 0;
+        for (var bi in worldRoot.children) {
+            const board = worldRoot.children[bi];
+            if (board.name != "board") continue;
+            for (var si in board.children) {
+                const stone = board.children[si];
+                if (!stone.name.startsWith("stone")) continue;
+                pos.setFromMatrixPosition(stone.matrixWorld);
+                ans.content.data.push(pos.x, pos.y, pos.z);
+                pos.project(camera)
+                ans.content.data.push(pos.x, pos.y, pos.z);
+                rows++;
+            }
+        }
+        ans.content.shape[0] = rows;
+
+        return ans;
+    }
+    static dataArrayFromAttribute3(attrib) {
+        const v = new THREE.Vector3();
+        const ans = []
+        for (let i = 0; i < attrib.count; i++) {
+            v.fromBufferAttribute(attrib, i);
+            ans.push(v.x)
+            ans.push(v.y)
+            ans.push(v.z);
+        }
+        return ans;
+    }
+    static dataArrayFromAttribute1(attrib) {
+        const v = new THREE.Vector3();
+        const ans = []
+        for (let i = 0; i < attrib.count; i++) {
+            v.fromBufferAttribute(attrib, i);
+            ans.push(v.x)
+            ans.push(v.y)
+            ans.push(v.z);
+        }
+        return ans;
+    }
+    static meshStoneName() {
+        return "mesh_stone";
+    }
+    static meshStoneObject(meshElement) {
+        var ans = {
+            name:this.meshStoneName(),
+        }
+        const geo = meshElement.geometry;
+        const poses = geo.getAttribute("position");
+        ans.content = {
+            vertices:{
+                shape:[poses.count, poses.itemSize],
+                data:this.dataArrayFromAttribute3(poses),
+                dtype:"number"
+            },
+            indices:{
+                data:geo.index.array,
+                shape:[geo.index.count/3, 3],
+                dtype:"uint16",
+            },
+        };
+        return ans;
+    }
+    static jsonObjectFromThreeElementRecursive(el, outScene) {
         const ans = {};
         if (el.name) {
             ans.name = el.name;
@@ -125,16 +201,26 @@ class ExportSceneSystem {
             ans.children = [];
             for (var ci in el.children) {
                 const child = el.children[ci];
-                const cobj = this.jsonObjectFromThreeElementRecursive(child);
+                const cobj = this.jsonObjectFromThreeElementRecursive(child, outScene);
                 ans.children.push(cobj)
             }
+        }
+        if (el.isMesh) {
+            if (!ans.children) {
+                ans.children = []
+            }
+            const meshObjName = this.meshStoneName()
+            if (!(meshObjName in outScene.objects)) {
+                outScene.objects[meshObjName] = this.meshStoneObject(el);
+            }
+            ans.children.push(meshObjName)
         }
         return ans;
     }
     static jsonObjectFromThreeCamera(camera, image_path) {
         const image = {
             name:"image",
-            data:{path:image_path},
+            content:{path:image_path},
             unpose:"pixel_index_from_unit_viewport",
             
         }
